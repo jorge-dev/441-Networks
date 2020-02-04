@@ -28,7 +28,7 @@
 
 /* port numbers */
 #define HTTP_PORT 80
-#define PROXY_PORT 8080
+#define PROXY_PORT 12345
 
 /* string sizes */
 #define MESSAGE_SIZE 2048
