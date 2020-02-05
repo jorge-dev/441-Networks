@@ -1,16 +1,18 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <regex>
 using namespace std;
 
 int main() {
-    string s1 = "src=\"./Garden-Floppy.jpg\"";
-    string s2 = "Floppysd";
-    if(strstr(s1.c_str(),s2.c_str()))
+    string s1 = "i have a word Floppy in here ";
+    regex s2 ("Floppy");
+    smatch m;
+    if(!regex_search(s1,m,s2))
     {
-	cout << " S1 Contains S2" << endl;
+	cout << "Found" << endl;
     }
     else
-	cout << " S1 doesnt s S2" << endl;
+	cout << "Not found" << endl;
     return 0;
 }
