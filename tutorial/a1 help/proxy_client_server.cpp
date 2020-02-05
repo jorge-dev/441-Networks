@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <string>
+#include<regex>
 
 using namespace std;
 
@@ -32,7 +33,7 @@ using namespace std;
 
 /* port numbers */
 #define HTTP_PORT 80
-#define PROXY_PORT 22222
+#define PROXY_PORT 1224
 
 /* string sizes */
 #define MESSAGE_SIZE 2048
@@ -50,7 +51,8 @@ int main(int argc, char* argv[]){
     char client_request[MESSAGE_SIZE], server_request[MESSAGE_SIZE], server_response[10*MESSAGE_SIZE], client_response[10*MESSAGE_SIZE];
     char url[MESSAGE_SIZE], host[MESSAGE_SIZE], path[MESSAGE_SIZE];
     int clientBytes, serverBytes, i;
-    int PROXY_PORT = argv[1];
+    // int PROXY_PORT = atoi(argv[1]);
+	// cout << PROXY_PORT << endl;
 
     /* to handle ungraceful exits */
     signal(SIGTERM, cleanExit);
@@ -157,9 +159,16 @@ int main(int argc, char* argv[]){
 		// Modify response... //
 		////////////////////////
 		string modify(server_response);
-		cout << endl<< endl << "===========================THIS IS A STRING================" <<endl<<endl;
-		cout << modify << endl;
-		cout << endl<< endl << "============================This is End of String=================" <<endl<<endl;
+		// cout << endl<< endl << "===========================THIS IS A STRING================" <<endl<<endl;
+		// cout << modify << endl;
+		// cout << endl<< endl << "============================This is End of String=================" <<endl<<endl;
+		regex change("[Ff]loppy");
+		string result;
+		result = regex_replace(modify,   change,  "Geek"); 
+		strcpy(server_response, result.c_str());
+		
+
+  
 		
 		//we are not modifying here, just passing the response along
 		printf("%s\n", server_response);
