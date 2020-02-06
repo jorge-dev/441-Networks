@@ -47,9 +47,11 @@ void cleanExit(int sig){
     exit(0);
 }
 
-int flag = true;
+
 
 int main(int argc, char* argv[]){
+
+
     char client_request[MESSAGE_SIZE], server_request[MESSAGE_SIZE], server_response[10*MESSAGE_SIZE], client_response[10*MESSAGE_SIZE];
     char url[MESSAGE_SIZE], host[MESSAGE_SIZE], path[MESSAGE_SIZE];
     int clientBytes, serverBytes, i;
@@ -88,9 +90,10 @@ int main(int argc, char* argv[]){
 	perror("listen() call failed...\n");
 	exit(-1);
     }
-
+	        int flag = true;
     //infinite while loop for listening
-    while (1){
+       while (1){
+
 	printf("Accepting connections...\n");
 
 	//accept client connection request 
@@ -170,7 +173,24 @@ int main(int argc, char* argv[]){
 		// cout << endl<< endl << "============================This is End of String=================" <<endl<<endl;
 				
 
-		regex floppy("[^\w+-]Floppy");
+		// regex floppy("[^\w+-]Floppy");
+		// regex italy("[^\w+-][iI]taly");
+		// regex image1("src=[\"|\'](?!.+Carey)(.+?)[\"|\']");
+		// regex image("src=\"(.*?)\"");
+		// regex ignore("Carey-Italy.jpg");
+		// regex contentLen("(Content-Length:.*)(.*)");
+		// regex link("Cute-Floppy");
+		// smatch m ; // match flag
+		// string result;
+				
+		// modify = regex_replace(modify,   floppy,  " Trolly");
+		// modify = regex_replace(modify,   italy,  " Germany");
+		// modify = regex_replace(modify,   image1,  "src=./trollface.jpg");
+		// modify = regex_replace(modify,   link,  "trollface");	
+
+		
+		if(flag){
+		    regex floppy("[^\w+-]Floppy");
 		regex italy("[^\w+-][iI]taly");
 		regex image1("src=[\"|\'](?!.+Carey)(.+?)[\"|\']");
 		regex image("src=\"(.*?)\"");
@@ -185,10 +205,9 @@ int main(int argc, char* argv[]){
 		modify = regex_replace(modify,   image1,  "src=./trollface.jpg");
 		modify = regex_replace(modify,   link,  "trollface");	
 
-		if(flag){
-
-		    htmlPosition = modify.find("Content-Type: text/html; charset=UTF-8\n");
-		    string strbytes = modify.substr(htmlPosition + 38);
+		    
+		    htmlPosition = modify.find("charset=UTF-8\r\n\r\n");
+		    string strbytes = modify.substr(htmlPosition + 16);
 		    int bytes = strbytes.size();
 		    string  modBytes = "Content-Length: " + to_string(bytes);
 		    modify = regex_replace(modify,   contentLen, modBytes );	
