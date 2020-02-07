@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	}
 	cout << "BEFORE MAIN WHILE LOOP" << endl
 		 << endl;
-		 flag = true;
+	flag = true;
 	//infinite while loop for listening
 	while (1)
 	{
@@ -116,9 +116,8 @@ int main(int argc, char *argv[])
 		while ((clientBytes = recv(data_sock, client_request, MESSAGE_SIZE, 0)) > 0)
 		{
 			cout << "INSIDE SECOND WHILE LOOP" << endl
-			 << endl;
+				 << endl;
 
-			
 			printf("%s\n", client_request);
 
 			//copy to server_request to preserve contents (client_request will be damaged in strtok())
@@ -193,26 +192,32 @@ int main(int argc, char *argv[])
 				// cout << modify << endl;
 				// cout << endl<< endl << "============================This is End of String=================" <<endl<<endl;
 
-				regex floppy("[^\w+-]Floppy");
-				regex italy("[^\w+-][iI]taly");
+				regex floppy("[^\\w+-]Floppy");
+				regex italy("[^\\w+-][iI]taly");
 				regex image1("src=[\"|\'](?!.+Carey)(.+?)[\"|\']");
 				regex image("src=\"(.*?)\"");
 				regex ignore("Carey-Italy.jpg");
 				regex contentLen("(Content-Length:.*)(.*)");
 				regex link("Cute-Floppy");
 				regex html("<html>");
+				regex text("This is a basic text file");
 				smatch m; // match flag
-				string result;
+				// string result;
 
-				modify = regex_replace(modify, floppy, " Trolly");
-				modify = regex_replace(modify, italy, " Germany");
-				modify = regex_replace(modify, image1, "src=./trollface.jpg");
-				modify = regex_replace(modify, link, "trollface");
+				// modify = regex_replace(modify, floppy, " Trolly");
+				// modify = regex_replace(modify, italy, " Italy");
+				// modify = regex_replace(modify, image1, "src=\"./trollface.jpg\"");
+				// modify = regex_replace(modify, link, "trollface");
 
-				if (regex_search(modify,m,html))
+				if (regex_search(modify, m, html) || regex_search(modify, m, text))
 				{
+					modify = regex_replace(modify, floppy, " Trolly");
+					modify = regex_replace(modify, italy, " Japan");
+					// modify = regex_replace(modify, italy, " Germany");
+					modify = regex_replace(modify, image1, "src=./trollface.jpg");
+					modify = regex_replace(modify, link, "trollface");
 
-					htmlPosition = modify.find("charset=UTF-8\r\n\r\n");
+					htmlPosition = modify.find("charset=UTF-8");
 					string strbytes = modify.substr(htmlPosition + 16);
 					int bytes = strbytes.size();
 					string modBytes = "Content-Length: " + to_string(bytes);
@@ -244,19 +249,18 @@ int main(int argc, char *argv[])
 				}
 				bzero(client_response, MESSAGE_SIZE);
 				bzero(server_response, MESSAGE_SIZE);
-				
-				
+
 			} //while recv() from server
 			cout << endl
-					 << "OUTSIDE THIRD WHILE LOOP" << endl;
-					 flag = false;
+				 << "OUTSIDE THIRD WHILE LOOP" << endl;
+			flag = false;
 
 		} //while recv() from client
-			cout << endl
-					 << "OUTSIDE SECOND WHILE LOOP" << endl;
+		cout << endl
+			 << "OUTSIDE SECOND WHILE LOOP" << endl;
 		close(data_sock);
 	} //infinite loop
 	cout << "OUTSIDE MAIN WHILE LOOP" << endl
-				 << endl;
+		 << endl;
 	return 0;
 }
