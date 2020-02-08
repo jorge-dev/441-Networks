@@ -204,16 +204,11 @@ int main(int argc, char *argv[])
 				smatch m; // match flag
 				// string result;
 
-				// modify = regex_replace(modify, floppy, " Trolly");
-				// modify = regex_replace(modify, italy, " Italy");
-				// modify = regex_replace(modify, image1, "src=\"./trollface.jpg\"");
-				// modify = regex_replace(modify, link, "trollface");
-
 				if (regex_search(modify, m, html) || regex_search(modify, m, text))
 				{
 					modify = regex_replace(modify, floppy, " Trolly");
-					modify = regex_replace(modify, italy, " Japan");
-					// modify = regex_replace(modify, italy, " Germany");
+					// modify = regex_replace(modify, italy, " Japan");
+					modify = regex_replace(modify, italy, " Germany");
 					modify = regex_replace(modify, image1, "src=./trollface.jpg");
 					modify = regex_replace(modify, link, "trollface");
 
