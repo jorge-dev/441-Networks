@@ -21,6 +21,8 @@
 #include <iostream>
 #include <string>
 #include <regex>
+#include <unistd.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -46,7 +48,14 @@ using namespace std;
 /* string sizes */
 #define MESSAGE_SIZE 2048
 
-int lstn_sock, data_sock, web_sock;
+void dostuff(int); /* function prototype */
+void error(const char *msg)
+{
+    perror(msg);
+    exit(1);
+}
+
+int lstn_sock, data_sock, web_sock, pid;
 
 void cleanExit(int sig)
 {
@@ -114,6 +123,16 @@ int main(int argc, char *argv[])
 			perror("accept() call failed\n");
 			exit(-1);
 		}
+
+		 pid = fork();
+         if (pid < 0)
+             error("ERROR on fork");
+         if (pid == 0)  {
+             close(lstn_sock);
+            //  dostuff(data_sock);
+             exit(0);
+         }
+         else close(data_sock);
 
 		//while loop to receive client requests
 		while ((clientBytes = recv(data_sock, client_request, MESSAGE_SIZE, 0)) > 0)
@@ -208,9 +227,9 @@ int main(int argc, char *argv[])
 				if (regex_search(modify, m, html) || regex_search(modify, m, text))
 				{
 					modify = regex_replace(modify, floppy, " Trolly");
-					modify = regex_replace(modify, italy, " Japan");
+					// modify = regex_replace(modify, italy, " Japan");
 					// this is the line i would change to show for the bonus marks
-					// modify = regex_replace(modify, italy, " Germany");
+					modify = regex_replace(modify, italy, " Germany");
 					modify = regex_replace(modify, image, "src=./trollface.jpg");
 					modify = regex_replace(modify, link, "trollface");
 
@@ -218,7 +237,7 @@ int main(int argc, char *argv[])
 					// and its full size in bytes in order to modify the Content Length sent back
 					htmlPosition = modify.find("charset=UTF-8");
 					string strbytes = modify.substr(htmlPosition + 16);
-					int bytes = strbytes.size();
+					int bytes = strbytes.length();
 					string modBytes = "Content-Length: " + to_string(bytes);
 					modify = regex_replace(modify, contentLen, modBytes);
 
