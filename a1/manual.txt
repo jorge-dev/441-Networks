@@ -1,0 +1,62 @@
+// ========================================== Web Proxy manual ====================================
+Created by Jorge Avila
+
+// =============================================== How to Compile ====================================
+
+This is a C++ program and to compile all you need to do is type the following command in the terminal:
+                        g++ jorgeProxy.cpp -o proxy
+It will take a half a second to compile because im using the regex library and it is huge.
+There should be no errors or warning when compiling
+
+
+// ========================================== How to use or run the proxy ====================================
+
+To use the proxy just make sure you compile the code forst and then type the following command in the terminal:
+                                ./proxy 1234
+The number after the ./proxy is customixable and 1234 was just an example. I recommend to use any number above 2000 and below 10000
+since i tested my code with numbers in his range and got a weird message when tried numbers bigger than 65000
+
+
+// ==================================================== How to Configure ====================================
+
+You can use any modern web browser to configure the proxy but I recomment using Firefox
+since it is very easy to configre a custom proxy and this is the browser I used for my testing
+so using a diferent browser might give different results
+
+To configure a custom web proxy in Firefox open the menu located at the top right corner,
+then click preferences.
+Once inside preference look for the search option and type proxy.
+This will take you to the network settings and click on the settings button.
+This will open another menu where you have to click the Manual Proxy Configuration option and enter the
+Http proxy and port number.
+
+For the HTTP proxy you have to enter you current IP address. This can be done by typing the following command in the terminal:
+                                   ifconfig  
+*****this command only works for linux and macOS computers. I am assuming one of these two OS will be used to test this proxy
+After typing this command look for the numbers after the word inet and before netmask to know what is your current IP address:
+for example: inet 127.0.0.1 netmask 0xff000000 ---- 127.0.0.1 is the IP address i would enter into the HTTP proxy textfield
+
+For the Proxy number you have to enter the same number you used when you ran the proxy.
+So if you used 1234 then enter 1234 in the port number.
+ 
+After this just press ok and you are ready to test the proxy. It a better idea do this step before you run the proxy but either way works.
+
+
+// ========================== Testing and supported Features ====================================
+ I did most of my testing in school using the linux computers but I tested it at home using my local network and Mac computer terminal
+ This proxy supports the main features required for the assignment:
+ It changes all ocurrences of the word "Floppy" to "Trolly", changed all instances of "Italy" to "Japan" and replaces all the jgp images 
+ referencing Floppy into a troll meme jpg. 
+
+ (The only Floopy instance I didnt change was floppy-eared beacuase i didnt think it made sense to say trolly-eared.
+ but my code can very easily do that i just changed my regex search to look for "Floppy" instead of any version of the word. I dont know if thats an issue but 
+ I its something i can make happen by adding one char to my regex search. Jus wanted to clarify this).
+
+This proxy also supporst the bonus feature to change "Italy" to "Germany" and it doesnt without altering the format of the html.
+the only problem I found when testing this feature is that sometimes the page took a little longer to load. However, this only happen when testing at home 
+and not at campus.
+
+I dont know what the first bonus meant but i tried to test my site with the Italy wikipedia page, but it didnt work because this pages uses https and 
+it bypasses my proxy. I didint know how if if i had to fix this issue in order to get the first bonus mark
+
+

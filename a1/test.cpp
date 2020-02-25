@@ -5,7 +5,7 @@
 using namespace std;
 
 int main() {
-    string s1 = "i have a word Floppy in here ";
+    string s1 = "This is Floppy";
     regex s2 ("Floppy");
     smatch m;
     if(!regex_search(s1,m,s2))

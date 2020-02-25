@@ -1,7 +1,15 @@
+/* Name: Jorge Avila
+   Tutorial: 01
+   ID: 10123968
+   Assignemt: 1
+
+   **Clarification: This is the skeleton code Rachek Mclean provided
+   in her tutorial. She is the author of 90% of this code except
+   from the code inside the third loop which is the code I added to make the
+   modifications to the web pages.
+*/
+
 /* 
- * Tutorial 3 - HTTP Proxy
- * Example: Basic Proxy (client <-> proxy <-> server)
- * Created: Jan. 27, 2020
  * Author: Rachel Mclean
  *
  */
@@ -13,6 +21,8 @@
 #include <iostream>
 #include <string>
 #include <regex>
+#include <unistd.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -38,7 +48,14 @@ using namespace std;
 /* string sizes */
 #define MESSAGE_SIZE 2048
 
-int lstn_sock, data_sock, web_sock;
+void dostuff(int); /* function prototype */
+void error(const char *msg)
+{
+    perror(msg);
+    exit(1);
+}
+
+int lstn_sock, data_sock, web_sock, pid;
 
 void cleanExit(int sig)
 {
@@ -50,12 +67,13 @@ void cleanExit(int sig)
 
 int main(int argc, char *argv[])
 {
-	bool flag;
+	
 	char client_request[MESSAGE_SIZE], server_request[MESSAGE_SIZE], server_response[10 * MESSAGE_SIZE], client_response[10 * MESSAGE_SIZE];
 	char url[MESSAGE_SIZE], host[MESSAGE_SIZE], path[MESSAGE_SIZE];
 	int clientBytes, serverBytes, i;
+
+	// port given by user as argument
 	int PROXY_PORT = atoi(argv[1]);
-	// cout << PROXY_PORT << endl;
 
 	/* to handle ungraceful exits */
 	signal(SIGTERM, cleanExit);
@@ -92,16 +110,10 @@ int main(int argc, char *argv[])
 		perror("listen() call failed...\n");
 		exit(-1);
 	}
-	cout << "BEFORE MAIN WHILE LOOP" << endl
-		 << endl;
-		 flag = true;
+
 	//infinite while loop for listening
 	while (1)
 	{
-
-		cout << "INSIDE MAIN WHILE LOOP" << endl
-			 << endl;
-
 		printf("Accepting connections...\n");
 
 		//accept client connection request
@@ -112,13 +124,19 @@ int main(int argc, char *argv[])
 			exit(-1);
 		}
 
+		 pid = fork();
+         if (pid < 0)
+             error("ERROR on fork");
+         if (pid == 0)  {
+             close(lstn_sock);
+            //  dostuff(data_sock);
+             exit(0);
+         }
+         else close(data_sock);
+
 		//while loop to receive client requests
 		while ((clientBytes = recv(data_sock, client_request, MESSAGE_SIZE, 0)) > 0)
 		{
-			cout << "INSIDE SECOND WHILE LOOP" << endl
-			 << endl;
-
-			
 			printf("%s\n", client_request);
 
 			//copy to server_request to preserve contents (client_request will be damaged in strtok())
@@ -182,59 +200,60 @@ int main(int argc, char *argv[])
 
 			while ((serverBytes = recv(web_sock, server_response, MESSAGE_SIZE, 0)) > 0)
 			{
-
-				cout << endl
-					 << "INSIDE THIRD WHILE LOOP" << endl;
-				////////////////////////
+				//////////////////////////////////////////////////////////////////////////
 				// Modify response... //
-				////////////////////////
-				string modify(server_response);
-				// cout << endl<< endl << "===========================THIS IS A STRING================" <<endl<<endl;
-				// cout << modify << endl;
-				// cout << endl<< endl << "============================This is End of String=================" <<endl<<endl;
+				//My code starts here 
+				//////////////////////////////////////////////////////////////////////////
 
-				regex floppy("[^\w+-]Floppy");
-				regex italy("[^\w+-][iI]taly");
-				regex image1("src=[\"|\'](?!.+Carey)(.+?)[\"|\']");
-				regex image("src=\"(.*?)\"");
+				// copy the content from server response into a string for easier manipulation of contents
+				string modify(server_response);
+				
+				//Regular expressions to look for target string neeed to be modified
+				regex floppy("[^\\w+-]Floppy");
+				regex italy("[^\\w+-][iI]taly");
+				regex image("src=[\"|\'](?!.+Carey)(.+?)[\"|\']");
 				regex ignore("Carey-Italy.jpg");
 				regex contentLen("(Content-Length:.*)(.*)");
 				regex link("Cute-Floppy");
 				regex html("<html>");
+				regex text("This is a basic text file");
 				smatch m; // match flag
-				string result;
-
-				modify = regex_replace(modify, floppy, " Trolly");
-				modify = regex_replace(modify, italy, " Germany");
-				modify = regex_replace(modify, image1, "src=./trollface.jpg");
-				modify = regex_replace(modify, link, "trollface");
-
-				if (regex_search(modify,m,html))
+		
+				// only run this code once for every request
+				// used to look for the size in bytes of the substring containing the html
+				// and modifying the Content Length attribute in order to make sure 
+				// the length of the modified string is exactly whar the server needs in order
+				// to correctly display the contents 
+				if (regex_search(modify, m, html) || regex_search(modify, m, text))
 				{
+					modify = regex_replace(modify, floppy, " Trolly");
+					// modify = regex_replace(modify, italy, " Japan");
+					// this is the line i would change to show for the bonus marks
+					modify = regex_replace(modify, italy, " Germany");
+					modify = regex_replace(modify, image, "src=./trollface.jpg");
+					modify = regex_replace(modify, link, "trollface");
 
-					htmlPosition = modify.find("charset=UTF-8\r\n\r\n");
+					// code to target the substring get its starting position in the array
+					// and its full size in bytes in order to modify the Content Length sent back
+					htmlPosition = modify.find("charset=UTF-8");
 					string strbytes = modify.substr(htmlPosition + 16);
-					int bytes = strbytes.size();
+					int bytes = strbytes.length();
 					string modBytes = "Content-Length: " + to_string(bytes);
 					modify = regex_replace(modify, contentLen, modBytes);
 
-					cout << endl
-						 << endl
-						 << "===========================html Position================" << endl
-						 << endl;
-					cout << "The html Position and bytes are " << htmlPosition << " " << bytes << endl
-						 << endl;
-					cout << endl
-						 << endl
-						 << "============================HTML Position=================" << endl
-						 << endl;
 				}
-
+				//copy the contents of the modifies string back to server response which is a 
+				// char [].
 				strcpy(server_response, modify.c_str());
+
+				//////////////////////////////////////////////////////////////////////////
+				// Response Modified... 
+				//My code ends here 
+				//////////////////////////////////////////////////////////////////////////
+
 
 				//we are not modifying here, just passing the response along
 				printf("%s\n", server_response);
-				//cout << endl << "this is maybe a line for the char" << endl;
 				bcopy(server_response, client_response, serverBytes);
 
 				//send http response to client
@@ -244,19 +263,11 @@ int main(int argc, char *argv[])
 				}
 				bzero(client_response, MESSAGE_SIZE);
 				bzero(server_response, MESSAGE_SIZE);
-				
-				
+
 			} //while recv() from server
-			cout << endl
-					 << "OUTSIDE THIRD WHILE LOOP" << endl;
-					 flag = false;
 
 		} //while recv() from client
-			cout << endl
-					 << "OUTSIDE SECOND WHILE LOOP" << endl;
 		close(data_sock);
 	} //infinite loop
-	cout << "OUTSIDE MAIN WHILE LOOP" << endl
-				 << endl;
 	return 0;
 }
