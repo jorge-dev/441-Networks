@@ -19,7 +19,7 @@
 using namespace std;
 /* Global manifest constants */
 #define MAX_MESSAGE_LENGTH 1000
-#define MYPORTNUM 1221
+#define MYPORTNUM 3335
 
 /* Optional verbose debugging output */
 #define DEBUG 1
@@ -33,7 +33,7 @@ void catcher(int sig)
 	close(childsockfd);
 	exit(0);
 }
-void clientUdp(int portNum, char ipAddress [], char  buf [1000])
+void clientUdp(int portNum, char ipAddress[], char buf[1000])
 {
 	int MAX_BUFFER_SIZE = 1000;
 	struct sockaddr_in si_server;
@@ -46,7 +46,6 @@ void clientUdp(int portNum, char ipAddress [], char  buf [1000])
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 	{
 		printf("Could not set up a socket!\n");
-	
 	}
 
 	memset((char *)&si_server, 0, sizeof(si_server));
@@ -61,22 +60,20 @@ void clientUdp(int portNum, char ipAddress [], char  buf [1000])
 
 	fprintf(stderr, "Youre inside the UPD client\n");
 
-		if (sendto(s, buf, strlen(buf), 0, server, sizeof(si_server)) == -1)
-		{
-			printf("sendto failed\n");
-			
-		}
+	if (sendto(s, buf, strlen(buf), 0, server, sizeof(si_server)) == -1)
+	{
+		printf("sendto failed\n");
+	}
 
-		if ((readBytes = recvfrom(s, buf, MAX_BUFFER_SIZE, 0, server, &len)) == -1)
-		{
-			printf("Read error!\n");
-			
-		}
-		buf[readBytes] = '\0'; // proper null-termination of string
-		// string answer (buf) ;
-		// bzero(buf, MAX_BUFFER_SIZE);
+	if ((readBytes = recvfrom(s, buf, MAX_BUFFER_SIZE, 0, server, &len)) == -1)
+	{
+		printf("Read error!\n");
+	}
+	buf[readBytes] = '\0'; // proper null-termination of string
+						   // string answer (buf) ;
+						   // bzero(buf, MAX_BUFFER_SIZE);
 
-		// printf("Answer: That word has %s letters!\n", buf);
+	// printf("Answer: That word has %s letters!\n", buf);
 	// }
 	close(s);
 }
@@ -167,19 +164,22 @@ int main()
 				printf("That word has %zu characters!\n", strlen(messagein));
 
 				// /* create the outgoing message (as an ASCII string) */
-				 sprintf(messageout, "%s", messagein);
+				sprintf(messageout, "%s", messagein);
 
 #ifdef DEBUG
-				
-			
-				int port =1112;
-				char address [MAX_MESSAGE_LENGTH] = "127.0.0.1";
-				clientUdp(port, address, messageout);
+
+				int idPort = 1111;
+				int revPort = 1112;
+				int upperPort = 1113;
+				int lowerPort = 1114;
+				int ceasarPort = 1115;
+				int yoursPort = 1116;
+				char address[MAX_MESSAGE_LENGTH] = "127.0.0.1";
+				clientUdp(yoursPort, address, messageout);
 				// strcpy(messageout,message.c_str());
 				printf("Child about to send message: %s\n", messageout);
 #endif
 
-				
 				/* send the result message back to the client */
 				send(childsockfd, messageout, strlen(messageout), 0);
 

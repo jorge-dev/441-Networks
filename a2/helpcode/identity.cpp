@@ -16,7 +16,7 @@
 
 /* Manifest constants */
 #define MAX_BUFFER_SIZE 40
-#define PORT 1112
+#define PORT 1111
 
 /* Verbose debugging */
 #define DEBUG 1

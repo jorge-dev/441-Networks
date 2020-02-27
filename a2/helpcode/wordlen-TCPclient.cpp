@@ -25,7 +25,7 @@ void perror(const char *s);
 #define MAX_HOSTNAME_LENGTH 64
 #define MAX_WORD_LENGTH 100
 #define BYNAME 1
-#define MYPORTNUM 1221 /* must match the server's port! */
+#define MYPORTNUM 3335 /* must match the server's port! */
 
 /* Menu selections */
 #define ALLDONE 0
