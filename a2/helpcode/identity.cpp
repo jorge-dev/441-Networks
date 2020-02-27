@@ -16,7 +16,7 @@
 
 /* Manifest constants */
 #define MAX_BUFFER_SIZE 40
-#define PORT 12345
+#define PORT 1112
 
 /* Verbose debugging */
 #define DEBUG 1
@@ -26,7 +26,8 @@ int main()
   {
     struct sockaddr_in si_server, si_client;
     struct sockaddr *server, *client;
-    int s, i, len=sizeof(si_server);
+    int s, i=sizeof(si_server);
+    socklen_t len = sizeof(si_server);
     char messagein[MAX_BUFFER_SIZE];
     char messageout[MAX_BUFFER_SIZE];
     int readBytes;
@@ -73,10 +74,10 @@ int main()
 	       messagein, inet_ntoa(si_client.sin_addr), ntohs(si_client.sin_port));
 
 #ifdef DEBUG
-	printf("server thinks that word has %d characters...\n", strlen(messagein));
+	printf("server thinks that word has %lu characters...\n", strlen(messagein));
 #endif
 	/* create the outgoing message (as an ASCII string) */
-	sprintf(messageout, "%d", strlen(messagein));
+	sprintf(messageout, "%s", messagein);
 
 #ifdef DEBUG
 	printf("Server sending back the message: \"%s\"\n", messageout);

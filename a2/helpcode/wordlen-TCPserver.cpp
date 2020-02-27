@@ -18,7 +18,7 @@
 #include <string>
 using namespace std;
 /* Global manifest constants */
-#define MAX_MESSAGE_LENGTH 100
+#define MAX_MESSAGE_LENGTH 1000
 #define MYPORTNUM 1221
 
 /* Optional verbose debugging output */
@@ -33,14 +33,14 @@ void catcher(int sig)
 	close(childsockfd);
 	exit(0);
 }
-void clientUdp(int portNum, char * ipAddress, string &message)
+void clientUdp(int portNum, char ipAddress [], char  buf [1000])
 {
 	int MAX_BUFFER_SIZE = 1000;
 	struct sockaddr_in si_server;
 	struct sockaddr *server;
 	int s, i = sizeof(si_server);
 	socklen_t len = sizeof(si_server);
-	char buf[MAX_BUFFER_SIZE];
+	// char buf[MAX_BUFFER_SIZE];
 	int readBytes;
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
@@ -62,15 +62,15 @@ void clientUdp(int portNum, char * ipAddress, string &message)
 	fprintf(stderr, "Welcome! I am the UDP version of the word length client!!\n");
 
 	/* loop until the user enters "bye" */
-	for (;;)
-	{
-		bzero(buf, MAX_BUFFER_SIZE);
+	// for (;;)
+	// {
+		// bzero(buf, MAX_BUFFER_SIZE);
 
-		printf("Enter a word to send to the server (or \"bye\" to exit): ");
-		scanf("%s", buf);
+		// printf("Enter a word to send to the server (or \"bye\" to exit): ");
+		// scanf("%s", buf);
 
-		if (strncmp(buf, "bye", 3) == 0)
-			break;
+		// if (strncmp(buf, "bye", 3) == 0)
+		// 	break;
 
 		if (sendto(s, buf, strlen(buf), 0, server, sizeof(si_server)) == -1)
 		{
@@ -84,9 +84,11 @@ void clientUdp(int portNum, char * ipAddress, string &message)
 			
 		}
 		buf[readBytes] = '\0'; // proper null-termination of string
+		// string answer (buf) ;
+		// bzero(buf, MAX_BUFFER_SIZE);
 
-		printf("Answer: That word has %s letters!\n", buf);
-	}
+		// printf("Answer: That word has %s letters!\n", buf);
+	// }
 	close(s);
 }
 
@@ -101,6 +103,7 @@ int main()
 	int i, j;
 	int pid;
 	char c;
+	string message;
 
 	/* Set up a signal handler to catch some weird termination conditions. */
 	act.sa_handler = catcher;
@@ -174,13 +177,19 @@ int main()
 				printf("Child process received word: %s\n", messagein);
 				printf("That word has %zu characters!\n", strlen(messagein));
 
-				/* create the outgoing message (as an ASCII string) */
-				sprintf(messageout, "%zu\n", strlen(messagein));
+				// /* create the outgoing message (as an ASCII string) */
+				 sprintf(messageout, "%s\n", messagein);
 
 #ifdef DEBUG
+				
+			
+				int port =1112;
+				char address [MAX_MESSAGE_LENGTH] = "127.0.0.1";
+				clientUdp(port, address, messageout);
+				// strcpy(messageout,message.c_str());
 				printf("Child about to send message: %s\n", messageout);
 #endif
-
+				
 				/* send the result message back to the client */
 				send(childsockfd, messageout, strlen(messageout), 0);
 

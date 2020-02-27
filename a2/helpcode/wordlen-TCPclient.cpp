@@ -13,7 +13,10 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <string.h>
-
+#include <iostream>
+#include <string>
+#include <string.h>
+using namespace std;
 /* Some generic error handling stuff */
 extern int errno;
 void perror(const char *s);
@@ -89,9 +92,10 @@ int main()
   }
 
   /* Print welcome banner */
+
   printf("Welcome! I am the TCP version of the word length client!!\n");
   printmenu();
-  scanf("%d", &choice);
+  
 
   /* main loop: read a word, send to server, and print answer received */
   while (choice != ALLDONE)
@@ -102,7 +106,9 @@ int main()
       c = getchar();
 
       /* prompt user for the input */
+
       printf("Enter your word: ");
+      
       len = 0;
       while ((c = getchar()) != '\n')
       {
@@ -111,7 +117,7 @@ int main()
       }
       /* make sure the message is null-terminated in C */
       message[len] = '\0';
-
+ 
       /* send it to the server via the socket */
       send(sockfd, message, len, 0);
 
@@ -121,7 +127,8 @@ int main()
         /* make sure the message is null-terminated in C */
         messageback[bytes] = '\0';
         printf("Answer received from server: ");
-        printf("`%s'\n", messageback);
+        printf("'%s'\n", messageback);
+         
       }
       else
       {
