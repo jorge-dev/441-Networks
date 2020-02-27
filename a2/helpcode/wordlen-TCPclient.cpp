@@ -143,6 +143,7 @@ int main()
 
     printmenu();
     scanf("%d", &choice);
+    bzero(message, MAX_WORD_LENGTH);
   }
 
   /* Program all done, so clean up and exit the client */

@@ -59,18 +59,7 @@ void clientUdp(int portNum, char ipAddress [], char  buf [1000])
 		printf("inet_pton() failed\n");
 	}
 
-	fprintf(stderr, "Welcome! I am the UDP version of the word length client!!\n");
-
-	/* loop until the user enters "bye" */
-	// for (;;)
-	// {
-		// bzero(buf, MAX_BUFFER_SIZE);
-
-		// printf("Enter a word to send to the server (or \"bye\" to exit): ");
-		// scanf("%s", buf);
-
-		// if (strncmp(buf, "bye", 3) == 0)
-		// 	break;
+	fprintf(stderr, "Youre inside the UPD client\n");
 
 		if (sendto(s, buf, strlen(buf), 0, server, sizeof(si_server)) == -1)
 		{
@@ -178,7 +167,7 @@ int main()
 				printf("That word has %zu characters!\n", strlen(messagein));
 
 				// /* create the outgoing message (as an ASCII string) */
-				 sprintf(messageout, "%s\n", messagein);
+				 sprintf(messageout, "%s", messagein);
 
 #ifdef DEBUG
 				
