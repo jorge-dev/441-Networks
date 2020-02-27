@@ -178,6 +178,7 @@ int main()
 				// strcpy(messageout,message.c_str());
 				printf("Child about to send message: %s\n", messageout);
 #endif
+
 				
 				/* send the result message back to the client */
 				send(childsockfd, messageout, strlen(messageout), 0);
