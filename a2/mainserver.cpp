@@ -16,10 +16,20 @@
 #include <signal.h>
 #include <string.h>
 #include <string>
+#include <iostream>
+#include <stdlib.h>
+#include <array>
 using namespace std;
+
 /* Global manifest constants */
 #define MAX_MESSAGE_LENGTH 1000
-#define MYPORTNUM 3335
+#define MYPORTNUM 3336
+#define IDENTITY_PORT 1111
+#define REVERSE_PORT 1112
+#define UPPER_PORT 1113
+#define LOWER_PORT 1114
+#define CEASAR_PORT 1115
+#define YOURS_PORT 1116
 
 /* Optional verbose debugging output */
 #define DEBUG 1
@@ -85,11 +95,13 @@ int main()
 	static struct sigaction act;
 	char messagein[MAX_MESSAGE_LENGTH];
 	char messageout[MAX_MESSAGE_LENGTH];
+	char udpServerAddress[MAX_MESSAGE_LENGTH] = "127.0.0.1";
+	array<int, 20> sequence;
 	int parentsockfd;
 	int i, j;
 	int pid;
 	char c;
-	string message;
+	string getMessage, getSequence;
 
 	/* Set up a signal handler to catch some weird termination conditions. */
 	act.sa_handler = catcher;
@@ -159,23 +171,77 @@ int main()
 			/* obtain the message from this client */
 			while (recv(childsockfd, messagein, MAX_MESSAGE_LENGTH, 0) > 0)
 			{
+
+				string splitMessage(messagein);
+				string delimiter = "%%";
+				size_t pos = 0;
+				pos = splitMessage.find(delimiter);
+				//get message
+				getMessage = splitMessage.substr(0, pos);
+				//get sequence
+				getSequence = splitMessage.erase(0, pos + delimiter.length());
+
+				for (int i = 0; i < getSequence.length(); i++)
+				{
+					sequence[i] = getSequence[i] - '0';
+					//cout<< "current num is: " << sequence[i] << endl;
+				}
+				cout << "number of items in sequence:: " << getSequence.length() << endl;
+
+				strcpy(messagein, getMessage.c_str());
+
 				/* print out the received message */
 				printf("Child process received word: %s\n", messagein);
 				printf("That word has %zu characters!\n", strlen(messagein));
+				cout << "this is the sequence: " << getSequence << endl;
 
 				// /* create the outgoing message (as an ASCII string) */
 				sprintf(messageout, "%s", messagein);
 
 #ifdef DEBUG
+				//cout << "size of sequence: " << sequence.size() << endl;
+				char tempMsg[MAX_MESSAGE_LENGTH];
+				strcpy(tempMsg, getMessage.c_str());
+				for (int i = 0; i < getSequence.size(); i++)
+				{
 
-				int idPort = 1111;
-				int revPort = 1112;
-				int upperPort = 1113;
-				int lowerPort = 1114;
-				int ceasarPort = 1115;
-				int yoursPort = 1116;
-				char address[MAX_MESSAGE_LENGTH] = "127.0.0.1";
-				clientUdp(yoursPort, address, messageout);
+					int serverOption = sequence[i];
+
+					switch (serverOption)
+					{
+					case 1:
+						clientUdp(IDENTITY_PORT, udpServerAddress, tempMsg);
+						break;
+
+					case 2:
+						clientUdp(REVERSE_PORT, udpServerAddress, tempMsg);
+						break;
+
+					case 3:
+						clientUdp(UPPER_PORT, udpServerAddress, tempMsg);
+						break;
+
+					case 4:
+						clientUdp(LOWER_PORT, udpServerAddress, tempMsg);
+						break;
+
+					case 5:
+						clientUdp(CEASAR_PORT, udpServerAddress, tempMsg);
+						break;
+
+					case 6:
+						clientUdp(YOURS_PORT, udpServerAddress, tempMsg);
+						break;
+
+					default:
+						printf("Sorry something wnet worng. You shoudn't be seeing this\n");
+						break;
+					}
+				}
+
+				strcpy(messageout, tempMsg);
+
+				//clientUdp(IDENTITY_PORT, udpServerAddress, messageout);
 				// strcpy(messageout,message.c_str());
 				printf("Child about to send message: %s\n", messageout);
 #endif

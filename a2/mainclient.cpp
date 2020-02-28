@@ -25,7 +25,7 @@ void perror(const char *s);
 #define MAX_HOSTNAME_LENGTH 64
 #define MAX_WORD_LENGTH 100
 #define BYNAME 1
-#define MYPORTNUM 3335 /* must match the server's port! */
+#define MYPORTNUM 3336 /* must match the server's port! */
 
 /* Menu selections */
 #define ALLDONE 0
@@ -36,7 +36,7 @@ void printmenu()
 {
   printf("\n");
   printf("Please choose from the following selections:\n");
-  printf("  1 - Enter a word\n");
+  printf("  1 - Enter a word and a sequence of numbers for data transformation\n");
   printf("  0 - Exit program\n");
   printf("Your desired menu selection? ");
 }
@@ -94,22 +94,35 @@ int main()
   /* Print welcome banner */
 
   printf("Welcome! I am the TCP version of the word length client!!\n");
-  printmenu();
-  
-
+  //printmenu();
+//char dc = getchar();
   /* main loop: read a word, send to server, and print answer received */
   while (choice != ALLDONE)
   {
+    printmenu();
+    scanf("%d", &choice);
     if (choice == ENTER)
     {
       /* get rid of newline after the (integer) menu choice given */
       c = getchar();
 
       /* prompt user for the input */
-
+      printf("\nThe numbers for data transfomation are the following: \n");
+      printf("1: Identity    2:Reverse    3:Upper    4:Lower    5:Ceasar    6:Yours\n");
       printf("Enter your word: ");
-      
       len = 0;
+      while ((c = getchar()) != '\n')
+      {
+        message[len] = c;
+        len++;
+      }
+      /* make delimeter */
+      message[len] = '%';
+      message[len+1] = '%';
+  //get the sequence
+      printf("Enter your sequence: ");
+      
+      len= len +2;
       while ((c = getchar()) != '\n')
       {
         message[len] = c;
@@ -117,7 +130,7 @@ int main()
       }
       /* make sure the message is null-terminated in C */
       message[len] = '\0';
- 
+
       /* send it to the server via the socket */
       send(sockfd, message, len, 0);
 
@@ -128,7 +141,6 @@ int main()
         messageback[bytes] = '\0';
         printf("Answer received from server: ");
         printf("'%s'\n", messageback);
-         
       }
       else
       {
@@ -141,8 +153,7 @@ int main()
     else
       printf("Invalid menu selection. Please try again.\n");
 
-    printmenu();
-    scanf("%d", &choice);
+    
     bzero(message, MAX_WORD_LENGTH);
   }
 
