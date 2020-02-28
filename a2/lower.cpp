@@ -13,33 +13,34 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-// #include <boost/algorithm/string.hpp>
+
 #include <string>
 
-/* Manifest constants */
+/* Constants */
 #define MAX_BUFFER_SIZE 40
 #define PORT 1114
 
-/* Verbose debugging */
-#define DEBUG 1
-
-/* Main program */
 int main()
 {
+  // main variables and socket structure declaration
   struct sockaddr_in si_server, si_client;
   struct sockaddr *server, *client;
   int s, i = sizeof(si_server);
   socklen_t len = sizeof(si_server);
+
+  //message related variables
   char messagein[MAX_BUFFER_SIZE];
   char messageout[MAX_BUFFER_SIZE];
   int readBytes;
 
+  // initialize listening socket
   if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
   {
     printf("Could not setup a socket!\n");
     return 1;
   }
 
+  // initialize proxies
   memset((char *)&si_server, 0, sizeof(si_server));
   si_server.sin_family = AF_INET;
   si_server.sin_port = htons(PORT);
@@ -47,49 +48,49 @@ int main()
   server = (struct sockaddr *)&si_server;
   client = (struct sockaddr *)&si_client;
 
+  //binding socket
   if (bind(s, server, sizeof(si_server)) == -1)
   {
     printf("Could not bind to port %d!\n", PORT);
     return 1;
   }
-  fprintf(stderr, "Welcome! I am the UDP version of the word length server!!\n");
-  printf("server now listening on UDP port %d...\n", PORT);
 
-  /* big loop, looking for incoming messages from clients */
+  fprintf(stderr, "You are in the Lower UDP server\n");
+  printf("UDP server listening on port %d...\n", PORT);
+
+  // infinite listening loop
   for (;;)
   {
-    /* clear out message buffers to be safe */
+    /* clear the message at the start of every iteration */
     bzero(messagein, MAX_BUFFER_SIZE);
     bzero(messageout, MAX_BUFFER_SIZE);
 
-    /* see what comes in from a client, if anything */
+    /* receive data from client */
     if ((readBytes = recvfrom(s, messagein, MAX_BUFFER_SIZE, 0, client, &len)) < 0)
     {
       printf("Read error!\n");
       return -1;
     }
-#ifdef DEBUG
-    else
-      printf("Server received %d bytes\n", readBytes);
-#endif
 
     printf("  server received \"%s\" from IP %s port %d\n",
            messagein, inet_ntoa(si_client.sin_addr), ntohs(si_client.sin_port));
 
-#ifdef DEBUG
-    printf("server thinks that word has %lu characters...\n", strlen(messagein));
-#endif
     /* create the outgoing message (as an ASCII string) */
     sprintf(messageout, "%s", messagein);
+
+  //copy charr array to string and make the needed modifications
     std::string upper(messageout);
 
-   transform(upper.begin(), upper.end(), upper.begin(), std::tolower);
+    //do the transformation
+    transform(upper.begin(), upper.end(), upper.begin(), std::tolower);
+    
+    // copy modified message to char array being sent to client
     strcpy(messageout, upper.c_str());
-#ifdef DEBUG
-    printf("Server sending back the message: \"%s\"\n", messageout);
-#endif
 
-    /* send the result message back to the client */
+    printf("Server sending back the message: \"%s\"\n", messageout);
+
+
+     /* send modified message back to the client */
     sendto(s, messageout, strlen(messageout), 0, client, len);
   }
 

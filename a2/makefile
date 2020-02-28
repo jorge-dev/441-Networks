@@ -66,6 +66,8 @@ main:	mainclient mainserver clean
 
 micro: identity reverse upper lower ceasar yours clean
 
+all: main micro
+
 
 
 

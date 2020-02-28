@@ -94,8 +94,7 @@ int main()
   /* Print welcome banner */
 
   printf("Welcome! I am the TCP version of the word length client!!\n");
-  //printmenu();
-//char dc = getchar();
+
   /* main loop: read a word, send to server, and print answer received */
   while (choice != ALLDONE)
   {
@@ -118,11 +117,11 @@ int main()
       }
       /* make delimeter */
       message[len] = '%';
-      message[len+1] = '%';
-  //get the sequence
+      message[len + 1] = '%';
+      //get the sequence
       printf("Enter your sequence: ");
-      
-      len= len +2;
+
+      len = len + 2;
       while ((c = getchar()) != '\n')
       {
         message[len] = c;
@@ -153,7 +152,6 @@ int main()
     else
       printf("Invalid menu selection. Please try again.\n");
 
-    
     bzero(message, MAX_WORD_LENGTH);
   }
 
