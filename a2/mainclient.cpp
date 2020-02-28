@@ -24,19 +24,21 @@ void perror(const char *s);
 /* Manifest constants used by client program */
 #define MAX_HOSTNAME_LENGTH 64
 #define MAX_WORD_LENGTH 100
-#define BYNAME 1
-#define MYPORTNUM 3336 /* must match the server's port! */
+#define BYNAME 0
+#define MYPORTNUM 3337 /* must match the server's port! */
 
 /* Menu selections */
 #define ALLDONE 0
-#define ENTER 1
+#define WORD 1
+#define TRANSFORM 2
 
 /* Prompt the user to enter a word */
 void printmenu()
 {
   printf("\n");
   printf("Please choose from the following selections:\n");
-  printf("  1 - Enter a word and a sequence of numbers for data transformation\n");
+  printf("  1 - Enter a word\n");
+  printf("  2 - Enter sequence for transformation\n");
   printf("  0 - Exit program\n");
   printf("Your desired menu selection? ");
 }
@@ -49,9 +51,9 @@ int main()
   struct sockaddr_in server;
   struct hostent *hp;
   char hostname[MAX_HOSTNAME_LENGTH];
-  char message[MAX_WORD_LENGTH];
-  char messageback[MAX_WORD_LENGTH];
-  int choice, len, bytes;
+  char message[MAX_WORD_LENGTH] = "";
+  char messageback[MAX_WORD_LENGTH] = "";
+  int choice, len, bytes, scan;
 
   /* Initialization of server sockaddr data structure */
   memset(&server, 0, sizeof(server));
@@ -99,60 +101,120 @@ int main()
   while (choice != ALLDONE)
   {
     printmenu();
-    scanf("%d", &choice);
-    if (choice == ENTER)
+    scan = scanf("%d", &choice);
+
+    if ((choice == 0 || choice == 1 || choice == 2) && scan == 1)
     {
-      /* get rid of newline after the (integer) menu choice given */
-      c = getchar();
 
-      /* prompt user for the input */
-      printf("\nThe numbers for data transfomation are the following: \n");
-      printf("1: Identity    2:Reverse    3:Upper    4:Lower    5:Ceasar    6:Yours\n");
-      printf("Enter your word: ");
-      len = 0;
-      while ((c = getchar()) != '\n')
+      if (choice == WORD)
       {
-        message[len] = c;
-        len++;
-      }
-      /* make delimeter */
-      message[len] = '%';
-      message[len + 1] = '%';
-      //get the sequence
-      printf("Enter your sequence: ");
+        /* get rid of newline after the (integer) menu choice given */
+        c = getchar();
 
-      len = len + 2;
-      while ((c = getchar()) != '\n')
-      {
-        message[len] = c;
-        len++;
-      }
-      /* make sure the message is null-terminated in C */
-      message[len] = '\0';
+        /* prompt user for the input */
 
-      /* send it to the server via the socket */
-      send(sockfd, message, len, 0);
+        printf("Enter your word: ");
+        len = 0;
+        while ((c = getchar()) != '\n')
+        {
+          message[len] = c;
+          len++;
+        }
+        /* make delimeter */
+        message[len] = '\n';
+        message[len + 1] = '\n';
+        //get the sequence
+        printf("\nThe numbers for data transfomation are the following: \n");
+        printf("1: Identity    2:Reverse    3:Upper    4:Lower    5:Ceasar    6:Yours\n");
+        printf("Enter your sequence: ");
 
-      /* see what the server sends back */
-      if ((bytes = recv(sockfd, messageback, len, 0)) > 0)
-      {
+        len = len + 2;
+        while ((c = getchar()) != '\n')
+        {
+          message[len] = c;
+          len++;
+        }
         /* make sure the message is null-terminated in C */
-        messageback[bytes] = '\0';
-        printf("Answer received from server: ");
-        printf("'%s'\n", messageback);
+        message[len] = '\0';
+
+        /* send it to the server via the socket */
+        send(sockfd, message, len, 0);
+
+        /* see what the server sends back */
+        if ((bytes = recv(sockfd, messageback, len, 0)) > 0)
+        {
+          /* make sure the message is null-terminated in C */
+          messageback[bytes] = '\0';
+          printf("Answer received from server: ");
+          printf("'%s'\n", messageback);
+        }
+        else
+        {
+          /* an error condition if the server dies unexpectedly */
+          printf("Sorry, dude. Server failed!\n");
+          close(sockfd);
+          exit(1);
+        }
+      }
+      else if (choice == TRANSFORM)
+      {
+        // get rid of newline after the (integer) menu choice given
+        c = getchar();
+        printf("message: %s and messageback: %s\n", message, messageback);
+        //get the len of the message array
+        len = strlen(message);
+        if (len > 0)
+        {
+          /* make delimeter */
+          message[len] = '\n';
+          message[len + 1] = '\n';
+
+          printf("\nThe numbers for data transfomation are the following: \n");
+          printf("1: Identity    2:Reverse    3:Upper    4:Lower    5:Ceasar    6:Yours\n");
+          cout << "Enter number or sequence of numbers: ";
+          len = len + 2;
+          while ((c = getchar()) != '\n')
+          {
+            message[len] = c;
+            len++;
+          }
+          /* make sure the message is null-terminated in C */
+          message[len] = '\0';
+
+          /* send it to the server via the socket */
+          send(sockfd, message, len, 0);
+
+          /* see what the server sends back */
+          if ((bytes = recv(sockfd, messageback, len, 0)) > 0)
+          {
+            /* make sure the message is null-terminated in C */
+            messageback[bytes] = '\0';
+            printf("Answer received from server: ");
+            printf("'%s'\n", messageback);
+          }
+          else
+          {
+            /* an error condition if the server dies unexpectedly */
+            printf("Sorry, dude. Server failed!\n");
+            close(sockfd);
+            exit(1);
+          }
+        }
+        else
+        {
+          cout << "Please enter a word to apply transformation to.\n";
+        }
       }
       else
-      {
-        /* an error condition if the server dies unexpectedly */
-        printf("Sorry, dude. Server failed!\n");
-        close(sockfd);
-        exit(1);
-      }
+        printf("Invalid menu selection. Please try again.\n");
+
+      strcpy(message, messageback);
+      //bzero(message, MAX_WORD_LENGTH);
     }
     else
-      printf("Invalid menu selection. Please try again.\n");
-
-    bzero(message, MAX_WORD_LENGTH);
+    {
+      cout << "Please select a valid option from the menu\n";
+    }
   }
 
   /* Program all done, so clean up and exit the client */

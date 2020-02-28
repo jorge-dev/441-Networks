@@ -23,7 +23,7 @@ using namespace std;
 
 /* Global manifest constants */
 #define MAX_MESSAGE_LENGTH 1000
-#define MYPORTNUM 3336
+#define MYPORTNUM 3337
 #define IDENTITY_PORT 1111
 #define REVERSE_PORT 1112
 #define UPPER_PORT 1113
@@ -173,7 +173,7 @@ int main()
 			{
 
 				string splitMessage(messagein);
-				string delimiter = "%%";
+				string delimiter = "\n\n";
 				size_t pos = 0;
 				pos = splitMessage.find(delimiter);
 				//get message

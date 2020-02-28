@@ -62,11 +62,11 @@ yours.o: yours.cpp
 clean:
 	/bin/rm -f  *# *~ *.o 
 
-main:	mainclient mainserver clean
+main:	mainclient mainserver 
 
-micro: identity reverse upper lower ceasar yours clean
+micro: identity reverse upper lower ceasar yours 
 
-all: main micro
+all: main micro 
 
 
 
