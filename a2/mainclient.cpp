@@ -33,6 +33,9 @@ void perror(const char *s);
 #define WORD 1
 #define TRANSFORM 2
 
+//Asks user for input and outputs answers according to user's choices
+void userHandler(int i);
+
 /* Prompt the user to enter a word */
 void printmenu()
 {
@@ -44,17 +47,19 @@ void printmenu()
   printf("Your desired menu selection? ");
 }
 
+//Global variables
+int sockfd, sockfd2;
+char c;
+struct sockaddr_in server;
+struct hostent *hp;
+char hostname[MAX_HOSTNAME_LENGTH];
+char message[MAX_WORD_LENGTH] = "";
+char messageback[MAX_WORD_LENGTH] = "";
+int  len, bytes, scan;
+
 /* Main program of client */
 int main()
 {
-  int sockfd, sockfd2;
-  char c;
-  struct sockaddr_in server;
-  struct hostent *hp;
-  char hostname[MAX_HOSTNAME_LENGTH];
-  char message[MAX_WORD_LENGTH] = "";
-  char messageback[MAX_WORD_LENGTH] = "";
-  int choice, len, bytes, scan;
 
   /* Initialization of server sockaddr data structure */
   memset(&server, 0, sizeof(server));
@@ -82,12 +87,25 @@ int main()
 
   /* Print welcome banner */
 
-  printf("Welcome! I am the TCP version of the word length client!!\n");
+  printf("You are in the Master TCP Server\n");
 
+  //Call the user handler to send and receive information to/from UDP server
+  userHandler(WORD);
+
+  printf("The client server has been closed\n");
+
+  /* Program all done, so clean up and exit the client */
+  close(sockfd);
+  exit(0);
+}
+
+void userHandler(int choice)
+{
+  cout << "youre in the user handler\n";
   /* main loop where the user can send words and sequences and receive a transformed version of their input word*/
   while (choice != ALLDONE)
   {
-
+cout << "youre in the user handler while loop\n";
     //printf("coice is :%d%c : \n", choice,c);
     if ((choice == 0 || choice == 1 || choice == 2) && scan == 2)
     {
@@ -217,9 +235,4 @@ int main()
     printmenu();
     scan = scanf("%d%c", &choice, &c);
   }
-  printf("The client server has been closed\n");
-
-  /* Program all done, so clean up and exit the client */
-  close(sockfd);
-  exit(0);
 }
