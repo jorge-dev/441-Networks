@@ -1,8 +1,12 @@
-/* Simple program to demonstrate a UDP-based server.
-
- * 
- * Compile using "cc -o wordlen-UDPserver wordlen-UDPserver.c"
- */
+/*
+Name: 	Jorge Avila
+ID:		10123968
+Asg#:	2
+Tut#:	1
+Aknowledments:   Code Written by Carey Williamson and modified by Jorge Avila
+				 I modified the original code and added all the needed functionality 
+				 to satisfy assignments requirement.
+*/
 
 /* Include files */
 #include <stdio.h>
@@ -116,7 +120,7 @@ int main()
 
     //copy charr array to string and make the needed modifications
     string messageStr(messageout);
-    
+
     //cypher the message
     messageStr = cypher(messageStr);
 

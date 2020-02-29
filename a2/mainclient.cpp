@@ -1,11 +1,12 @@
-/* TCP-based client example of socket programming.    */
-/* This client interacts with the word length server, */
-/* which needs to be running first.                   */
-/*                                                    */
-/* Usage: cc -o wordlen-TCPclient wordlen-TCPclient.c */
-/*        ./wordlen-TCPclient                         */
-/*                                                    */
-/* Written by Carey Williamson       January 13, 2012 */
+/*
+Name: 	Jorge Avila
+ID:		10123968
+Asg#:	2
+Tut#:	1
+Aknowledments:   Code Written by Carey Williamson and modified by Jorge Avila
+				 I modified the original code and added all the needed functionality 
+				 to satisfy assignments requirement.
+*/
 
 /* Include files for C socket programming and stuff */
 #include <stdio.h>

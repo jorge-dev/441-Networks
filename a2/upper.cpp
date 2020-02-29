@@ -1,11 +1,12 @@
-/* Simple program to demonstrate a UDP-based server.
- * Loops forever.
- * Receives a word from the client. 
- * Sends back the length of that word to the client.
- * 
- * Compile using "cc -o wordlen-UDPserver wordlen-UDPserver.c"
- */
-
+/*
+Name: 	Jorge Avila
+ID:		10123968
+Asg#:	2
+Tut#:	1
+Aknowledments:   Code Written by Carey Williamson and modified by Jorge Avila
+				 I modified the original code and added all the needed functionality 
+				 to satisfy assignments requirement.
+*/
 /* Include files */
 #include <stdio.h>
 #include <unistd.h>
@@ -81,7 +82,7 @@ int main()
 
     // do the text transformation
     transform(upper.begin(), upper.end(), upper.begin(), std::toupper);
-    
+
     // copy modified message to char array being sent to client
     strcpy(messageout, upper.c_str());
 

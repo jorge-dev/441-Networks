@@ -1,11 +1,12 @@
-/* TCP-based server example of socket programming.    */
-/* The server receives an input word (e.g., "dog")    */
-/* and returns the length of the word (e.g., "3").    */
-/*                                                    */
-/* Usage: cc -o wordlen-TCPserver wordlen-TCPserver.c */
-/*        ./wordlen-TCPserver                         */
-/*                                                    */
-/* Written by Carey Williamson       January 13, 2012 */
+/*
+Name: 	Jorge Avila
+ID:		10123968
+Asg#:	2
+Tut#:	1
+Aknowledments:   Code Written by Carey Williamson and modified by Jorge Avila
+				 I modified the original code and added all the needed functionality 
+				 to satisfy assignments requirement.
+*/
 
 /* Include files for C socket programming and stuff */
 #include <stdio.h>
@@ -50,12 +51,9 @@ void clientUdp(int portNum, char ipAddress[], char buf[])
 	struct sockaddr *server;
 	int s, i = sizeof(si_server);
 	socklen_t len = sizeof(si_server);
-	// char buf[MAX_BUFFER_SIZE];
 	int readBytes;
 	char connectionError[MAX_MESSAGE_LENGTH] = "=ERR";
 
-	// //clear the buf array
-	//  bzero(buf, MAX_MESSAGE_LENGTH);
 	// Time interval initialization variables
 	struct timeval tv;
 	//seconds
@@ -63,16 +61,18 @@ void clientUdp(int portNum, char ipAddress[], char buf[])
 	//micro-seconds
 	tv.tv_usec = 500000; // wait half a second
 
+	//Initialize socket
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 	{
 		printf("Could not set up a socket!\n");
 	}
-
+	//Initialize proxy
 	memset((char *)&si_server, 0, sizeof(si_server));
 	si_server.sin_family = AF_INET;
 	si_server.sin_port = htons(portNum);
 	server = (struct sockaddr *)&si_server;
 
+	//Convert IPv4 address into network address structure
 	if (inet_pton(AF_INET, ipAddress, &si_server.sin_addr) == 0)
 	{
 		printf("inet_pton() failed\n");
@@ -85,11 +85,14 @@ void clientUdp(int portNum, char ipAddress[], char buf[])
 	{
 		perror("Error");
 	}
+
+	//Try to send data to server
 	if (sendto(s, buf, strlen(buf), 0, server, sizeof(si_server)) == -1)
 	{
 		printf("Failed to send data to server\n");
 	}
 
+	//Try to receive data from server
 	if ((readBytes = recvfrom(s, buf, MAX_BUFFER_SIZE, 0, server, &len)) == -1)
 	{
 		printf("Failed to read data from server after timeout!\n");
@@ -98,16 +101,15 @@ void clientUdp(int portNum, char ipAddress[], char buf[])
 	}
 	else
 		buf[readBytes] = '\0'; // proper null-termination of string
-							  
 
-	// printf("Answer: That word has %s letters!\n", buf);
-	// }
+	
 	close(s);
 }
 
-/* Main program for server */
+
 int main()
 {
+	//Main variables and socket struct initialization
 	struct sockaddr_in server;
 	static struct sigaction act;
 	char messagein[MAX_MESSAGE_LENGTH];
@@ -188,7 +190,7 @@ int main()
 			/* obtain the message from this client */
 			while (recv(childsockfd, messagein, MAX_MESSAGE_LENGTH, 0) > 0)
 			{
-
+				//find delimeter and separate message from sequence
 				string splitMessage(messagein);
 				string delimiter = "\n\n";
 				size_t pos = 0;
@@ -198,38 +200,37 @@ int main()
 				//get sequence
 				getSequence = splitMessage.erase(0, pos + delimiter.length());
 
+				//store sequence numbers into int array
 				for (int i = 0; i < getSequence.length(); i++)
 				{
 					sequence[i] = getSequence[i] - '0';
-					//cout<< "current num is: " << sequence[i] << endl;
 				}
-				cout << "number of items in sequence:: " << getSequence.length() << endl;
+				// cout << "number of items in sequence:: " << getSequence.length() << endl;
 
 				strcpy(messagein, getMessage.c_str());
 
 				/* print out the received message */
 				printf("Child process received word: %s\n", messagein);
 				printf("That word has %zu characters!\n", strlen(messagein));
-				cout << "this is the sequence: " << getSequence << endl;
+				// cout << "this is the sequence: " << getSequence << endl;
 
 				// /* create the outgoing message (as an ASCII string) */
 				sprintf(messageout, "%s", messagein);
 
-#ifdef DEBUG
+				//create a temp message array to store message in and its modifications
 				char tempMsg[MAX_MESSAGE_LENGTH];
 				strcpy(tempMsg, getMessage.c_str());
+				// loop through all the sequence of transformations and apply this modifications to the word
 				for (int i = 0; i < getSequence.size(); i++)
 				{
-
+					//stores current sequence number
 					int serverOption = sequence[i];
 
+					// send data to appropiate server depending on the sequence number
 					switch (serverOption)
 					{
 					case 1:
 						clientUdp(IDENTITY_PORT, udpServerAddress, tempMsg);
-						cout << "temp message = " << tempMsg << endl;	
-						//string temp(tempMsg);
-						//if (temp.find("Error==UDP-->"))
 						break;
 
 					case 2:
@@ -257,13 +258,11 @@ int main()
 						break;
 					}
 				}
-
+				//copy the modified word or sentence into messageout
 				strcpy(messageout, tempMsg);
 
-				//clientUdp(IDENTITY_PORT, udpServerAddress, messageout);
-				// strcpy(messageout,message.c_str());
+				//Print the actual message the server is sending to client
 				printf("Child about to send message: %s\n", messageout);
-#endif
 
 				/* send the result message back to the client */
 				send(childsockfd, messageout, strlen(messageout), 0);
