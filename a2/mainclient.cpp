@@ -56,7 +56,7 @@ struct hostent *hp;
 char hostname[MAX_HOSTNAME_LENGTH];
 char message[MAX_WORD_LENGTH] = "";
 char messageback[MAX_WORD_LENGTH] = "";
-int  len, bytes, scan;
+int len, bytes, scan;
 
 /* Main program of client */
 int main()
@@ -102,19 +102,16 @@ int main()
 
 void userHandler(int choice)
 {
-  cout << "youre in the user handler\n";
+
   /* main loop where the user can send words and sequences and receive a transformed version of their input word*/
   while (choice != ALLDONE)
   {
-cout << "youre in the user handler while loop\n";
-    //printf("coice is :%d%c : \n", choice,c);
+
     if ((choice == 0 || choice == 1 || choice == 2) && scan == 2)
     {
 
       if (choice == WORD)
       {
-        /* get rid of newline after the (integer) menu choice given */
-        //c = getchar();
 
         /* prompt user for the input */
 
@@ -128,6 +125,7 @@ cout << "youre in the user handler while loop\n";
         /* make delimeter */
         message[len] = '\n';
         message[len + 1] = '\n';
+
         //get the sequence
         printf("\nThe numbers for data transfomation are the following: \n");
         printf("1: Identity    2:Reverse    3:Upper    4:Lower    5:Ceasar    6:Yours\n");
@@ -155,15 +153,19 @@ cout << "youre in the user handler while loop\n";
           //if error string was found in message then print the error and clear message out
           if (found)
           {
+            printf("\n=======================================================================\n\n");
             printf("Answer received from server: UDP server not responding after timeout\n");
+            printf("\n=======================================================================\n");
             bzero(messageback, MAX_WORD_LENGTH);
           }
           else
           {
             /* make sure the message is null-terminated in C */
             messageback[bytes] = '\0';
+            printf("\n=======================================================================\n\n");
             printf("Answer received from server: ");
             printf("'%s'\n", messageback);
+            printf("\n=======================================================================\n");
           }
         }
         else
@@ -176,9 +178,8 @@ cout << "youre in the user handler while loop\n";
       }
       else if (choice == TRANSFORM)
       {
-        // get rid of newline after the (integer) menu choice given
-        //c = getchar();
-        printf("word to be modified: %s\n", message);
+
+        printf("\n***** Word to be modifeid: %s ******\n", message);
         //get the len of the message array
         len = strlen(message);
         if (len > 0)
@@ -190,6 +191,7 @@ cout << "youre in the user handler while loop\n";
           printf("\nThe numbers for data transfomation are the following: \n");
           printf("1: Identity    2:Reverse    3:Upper    4:Lower    5:Ceasar    6:Yours\n");
           cout << "Enter number or sequence of numbers: ";
+
           len = len + 2;
           while ((c = getchar()) != '\n')
           {
@@ -205,11 +207,27 @@ cout << "youre in the user handler while loop\n";
           /* see what the server sends back */
           if ((bytes = recv(sockfd, messageback, len, 0)) > 0)
           {
+            //only used for error trapping message sent from server
+          char *found = NULL;
+          char checkUDP_Error[30] = "=ERR";
+          found = strstr(messageback, checkUDP_Error);
+          //if error string was found in message then print the error and clear message out
+          if (found)
+          {
+            printf("\n=======================================================================\n\n");
+            printf("Answer received from server: UDP server not responding after timeout\n");
+            printf("\n=======================================================================\n");
+            bzero(messageback, MAX_WORD_LENGTH);
+          }
+          else
+          {
             /* make sure the message is null-terminated in C */
-
-            messageback[bytes] = '\0';
+            //messageback[bytes] = '\0';
+            printf("\n=======================================================================\n\n");
             printf("Answer received from server: ");
             printf("'%s'\n", messageback);
+            printf("\n=======================================================================\n");
+          }
           }
           else
           {
