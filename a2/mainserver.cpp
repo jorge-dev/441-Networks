@@ -23,7 +23,7 @@ using namespace std;
 
 /* Global manifest constants */
 #define MAX_MESSAGE_LENGTH 1000
-#define MYPORTNUM 3337
+#define MYPORTNUM 4441
 #define IDENTITY_PORT 1111
 #define REVERSE_PORT 1112
 #define UPPER_PORT 1113
@@ -43,15 +43,25 @@ void catcher(int sig)
 	close(childsockfd);
 	exit(0);
 }
-void clientUdp(int portNum, char ipAddress[], char buf[1000])
+void clientUdp(int portNum, char ipAddress[], char buf[])
 {
-	int MAX_BUFFER_SIZE = 1000;
+	int MAX_BUFFER_SIZE = MAX_MESSAGE_LENGTH;
 	struct sockaddr_in si_server;
 	struct sockaddr *server;
 	int s, i = sizeof(si_server);
 	socklen_t len = sizeof(si_server);
 	// char buf[MAX_BUFFER_SIZE];
 	int readBytes;
+	char connectionError[MAX_MESSAGE_LENGTH] = "=ERR";
+
+	// //clear the buf array
+	//  bzero(buf, MAX_MESSAGE_LENGTH);
+	// Time interval initialization variables
+	struct timeval tv;
+	//seconds
+	tv.tv_sec = 0;
+	//micro-seconds
+	tv.tv_usec = 500000; // wait half a second
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 	{
@@ -70,18 +80,25 @@ void clientUdp(int portNum, char ipAddress[], char buf[1000])
 
 	fprintf(stderr, "Youre inside the UPD client\n");
 
+	// set a timeout for sendind/receiving data from udp server
+	if (setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0)
+	{
+		perror("Error");
+	}
 	if (sendto(s, buf, strlen(buf), 0, server, sizeof(si_server)) == -1)
 	{
-		printf("sendto failed\n");
+		printf("Failed to send data to server\n");
 	}
 
 	if ((readBytes = recvfrom(s, buf, MAX_BUFFER_SIZE, 0, server, &len)) == -1)
 	{
-		printf("Read error!\n");
+		printf("Failed to read data from server after timeout!\n");
+		strcpy(buf, connectionError);
+		printf("the string is: %s\n", buf);
 	}
-	buf[readBytes] = '\0'; // proper null-termination of string
-						   // string answer (buf) ;
-						   // bzero(buf, MAX_BUFFER_SIZE);
+	else
+		buf[readBytes] = '\0'; // proper null-termination of string
+							  
 
 	// printf("Answer: That word has %s letters!\n", buf);
 	// }
@@ -199,7 +216,6 @@ int main()
 				sprintf(messageout, "%s", messagein);
 
 #ifdef DEBUG
-				//cout << "size of sequence: " << sequence.size() << endl;
 				char tempMsg[MAX_MESSAGE_LENGTH];
 				strcpy(tempMsg, getMessage.c_str());
 				for (int i = 0; i < getSequence.size(); i++)
@@ -211,6 +227,9 @@ int main()
 					{
 					case 1:
 						clientUdp(IDENTITY_PORT, udpServerAddress, tempMsg);
+						cout << "temp message = " << tempMsg << endl;	
+						//string temp(tempMsg);
+						//if (temp.find("Error==UDP-->"))
 						break;
 
 					case 2:

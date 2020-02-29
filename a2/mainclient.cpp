@@ -16,6 +16,7 @@
 #include <iostream>
 #include <string>
 #include <string.h>
+#include <arpa/inet.h>
 using namespace std;
 /* Some generic error handling stuff */
 extern int errno;
@@ -25,7 +26,7 @@ void perror(const char *s);
 #define MAX_HOSTNAME_LENGTH 64
 #define MAX_WORD_LENGTH 100
 #define BYNAME 0
-#define MYPORTNUM 3337 /* must match the server's port! */
+#define MYPORTNUM 4441 /* must match the server's port! */
 
 /* Menu selections */
 #define ALLDONE 0
@@ -61,22 +62,8 @@ int main()
   server.sin_port = htons(MYPORTNUM);
   server.sin_addr.s_addr = htonl(INADDR_ANY);
 
-#ifdef BYNAME
-  /* use a resolver to get the IP address for a domain name */
-  /* I did my testing using csx1 (136.159.5.25)    Carey */
-  strcpy(hostname, "localhost");
-  hp = gethostbyname(hostname);
-  if (hp == NULL)
-  {
-    fprintf(stderr, "%s: unknown host\n", hostname);
-    exit(1);
-  }
-  /* copy the IP address into the sockaddr structure */
-  bcopy(hp->h_addr, &server.sin_addr, hp->h_length);
-#else
   /* hard code the IP address so you don't need hostname resolver */
   server.sin_addr.s_addr = inet_addr("127.0.0.1");
-#endif
 
   /* create the client socket for its transport-level end point */
   if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
@@ -97,19 +84,18 @@ int main()
 
   printf("Welcome! I am the TCP version of the word length client!!\n");
 
-  /* main loop: read a word, send to server, and print answer received */
+  /* main loop where the user can send words and sequences and receive a transformed version of their input word*/
   while (choice != ALLDONE)
   {
-    printmenu();
-    scan = scanf("%d", &choice);
 
-    if ((choice == 0 || choice == 1 || choice == 2) && scan == 1)
+    //printf("coice is :%d%c : \n", choice,c);
+    if ((choice == 0 || choice == 1 || choice == 2) && scan == 2)
     {
 
       if (choice == WORD)
       {
         /* get rid of newline after the (integer) menu choice given */
-        c = getchar();
+        //c = getchar();
 
         /* prompt user for the input */
 
@@ -143,10 +129,23 @@ int main()
         /* see what the server sends back */
         if ((bytes = recv(sockfd, messageback, len, 0)) > 0)
         {
-          /* make sure the message is null-terminated in C */
-          messageback[bytes] = '\0';
-          printf("Answer received from server: ");
-          printf("'%s'\n", messageback);
+          //only used for error trapping message sent from server
+          char *found = NULL;
+          char checkUDP_Error[30] = "=ERR";
+          found = strstr(messageback, checkUDP_Error);
+          //if error string was found in message then print the error and clear message out
+          if (found)
+          {
+            printf("Answer received from server: UDP server not responding after timeout\n");
+            bzero(messageback, MAX_WORD_LENGTH);
+          }
+          else
+          {
+            /* make sure the message is null-terminated in C */
+            messageback[bytes] = '\0';
+            printf("Answer received from server: ");
+            printf("'%s'\n", messageback);
+          }
         }
         else
         {
@@ -159,8 +158,8 @@ int main()
       else if (choice == TRANSFORM)
       {
         // get rid of newline after the (integer) menu choice given
-        c = getchar();
-        printf("message: %s and messageback: %s\n", message, messageback);
+        //c = getchar();
+        printf("word to be modified: %s\n", message);
         //get the len of the message array
         len = strlen(message);
         if (len > 0)
@@ -188,6 +187,7 @@ int main()
           if ((bytes = recv(sockfd, messageback, len, 0)) > 0)
           {
             /* make sure the message is null-terminated in C */
+
             messageback[bytes] = '\0';
             printf("Answer received from server: ");
             printf("'%s'\n", messageback);
@@ -209,13 +209,15 @@ int main()
         printf("Invalid menu selection. Please try again.\n");
 
       strcpy(message, messageback);
-      //bzero(message, MAX_WORD_LENGTH);
     }
     else
     {
       cout << "Please select a valid option from the menu\n";
     }
+    printmenu();
+    scan = scanf("%d%c", &choice, &c);
   }
+  printf("The client server has been closed\n");
 
   /* Program all done, so clean up and exit the client */
   close(sockfd);

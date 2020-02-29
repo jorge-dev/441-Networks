@@ -21,40 +21,20 @@ using namespace std;
 #define MAX_BUFFER_SIZE 40
 #define PORT 1116
 
-// Ceasar cypher function
-// This can decypher a cyphered message
-// I found this function here https://www.geeksforgeeks.org/caesar-cipher-in-cryptography/
-// however I made some modifications to match the assignment requirements
-string decypher(string text)
+// XOR encryption/decryption
+// This will encrypt and decrypt a given message if message was encrypted by this function
+// I found this function here https://kylewbanks.com/blog/Simple-XOR-Encryption-Decryption-in-Cpp
+string encryptDecrypt(string text)
 {
-  int unshift = 26 - (13 % 26);
-  string result = "";
-  size_t found;
-  // traverse text
-  string letters("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
-
-  for (int i = 0; i < text.length(); i++)
-  {
-    found = letters.find(tolower(text[i]));
-    if (found != string::npos)
-    {
-      // apply transformation to each character
-      // Encrypt Uppercase letters
-      if (isupper(text[i]))
-        result += char(int(text[i] + unshift - 65) % 26 + 65);
-
-      // Encrypt Lowercase letters
-      else
-        result += char(int(text[i] + unshift - 97) % 26 + 97);
-    }
-    else
-    {
-      result += text[i];
-    }
-  }
-
-  // Return the resulting string
-  return result;
+  //keys used for encryption/decryption
+  char key[20] = {'Y', 'O', 'U', 'C', 'A','N','T','H','A','C','K','T','H','I','S'}; 
+    string output = text;
+    
+    for (int i = 0; i < text.size(); i++)
+        //XOR encryption
+        output[i] = text[i] ^ key[i % (sizeof(key) / sizeof(char))];
+    
+    return output;
 }
 
 int main()
@@ -92,7 +72,7 @@ int main()
     return 1;
   }
 
-  fprintf(stderr, "You are in the Yours UDP server. This can decypher messages cyphered with the Ceasar cypher\n");
+  fprintf(stderr, "You are in the Encrypt UDP server. \n");
   printf("UDP server listening on port %d...\n", PORT);
 
   // infinite listening loop
@@ -118,9 +98,9 @@ int main()
     //copy charr array to string and make the needed modifications
     string messageStr(messageout);
 
-    //decypher message
-    messageStr = decypher(messageStr);
-    
+    //encryptDecrypt message
+    messageStr = encryptDecrypt(messageStr);
+
     // copy modified message to char array being sent to client
     strcpy(messageout, messageStr.c_str());
 
