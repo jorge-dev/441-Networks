@@ -16,7 +16,8 @@ Aknowledments:   Code Written by Carey Williamson and modified by Jorge Avila
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string>
-
+#include <algorithm>
+using namespace std;
 /* Constants */
 #define MAX_BUFFER_SIZE 40
 #define PORT 1112

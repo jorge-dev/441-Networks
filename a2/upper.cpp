@@ -15,7 +15,11 @@ Aknowledments:   Code Written by Carey Williamson and modified by Jorge Avila
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string>
+#include <iostream>
+//#include <bits/stdc++.h>
+//#include <algorithm>
 
+using namespace std;
 /* Constants */
 #define MAX_BUFFER_SIZE 40
 #define PORT 1113
@@ -81,8 +85,10 @@ int main()
     std::string upper(messageout);
 
     // do the text transformation
-    transform(upper.begin(), upper.end(), upper.begin(), std::toupper);
+    //  transform(upper.begin(), upper.end(), upper.begin(), std::toupper);
 
+    for (auto & c: upper) c = toupper(c);
+    
     // copy modified message to char array being sent to client
     strcpy(messageout, upper.c_str());
 

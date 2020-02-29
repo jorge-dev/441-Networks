@@ -81,13 +81,14 @@ int main()
     sprintf(messageout, "%s", messagein);
 
   //copy charr array to string and make the needed modifications
-    std::string upper(messageout);
+    std::string lower(messageout);
 
     //do the transformation
-    transform(upper.begin(), upper.end(), upper.begin(), std::tolower);
+//    transform(upper.begin(), upper.end(), upper.begin(), std::tolower);
 
+    for (auto & c: lower) c = tolower(c);
     // copy modified message to char array being sent to client
-    strcpy(messageout, upper.c_str());
+    strcpy(messageout, lower.c_str());
 
     printf("Server sending back the message: \"%s\"\n", messageout);
 

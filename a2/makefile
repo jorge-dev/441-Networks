@@ -1,5 +1,5 @@
 
-CPPFLAGS= -O2
+CPPFLAGS= -O2 
 #CPPFLAGS=-ansi -pedantic-errors -Wall -Wconversion -std=c++17
 #GTFLAGS=-lgtest -lgtest_main
 
