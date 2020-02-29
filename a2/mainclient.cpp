@@ -45,7 +45,7 @@ void printmenu()
   printf("  1 - Enter a word\n");
   printf("  2 - Enter sequence for transformation\n");
   printf("  0 - Exit program\n");
-  printf("Your desired menu selection? ");
+  printf("Please enter your selection? ");
 }
 
 //Global variables
