@@ -29,8 +29,8 @@
 /* #define RANDOMIZED 1 */
 
 /* Debugging output */
-#define DEBUG 0
-#define DEBUG2 0        /* event list sorting */
+//#define DEBUG 0
+//#define DEBUG2 0        /* event list sorting */
 /* #define DEBUG3 1        /* event list shifting */
 /* #define DEBUG4 1        /* event list copying */
 
