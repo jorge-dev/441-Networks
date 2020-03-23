@@ -11,6 +11,7 @@ using namespace std;
 // Number of vertices in the graph
 #define V 4
 
+
 // struct pathsTaken{
 // 	char src;
 // 	int hops,propDelay,cost;
@@ -156,12 +157,17 @@ int main()
 
 	FILE *file;
 	file = fopen("topology2.dat", "r");
-	int nEdge = 0;
+	int numNodes = 1;
 	char src, dest;
 	int delay, capacity;
+		char lastNode = 'A';
+
 	while (fscanf(file, "%c %c %d %d\n", &src, &dest, &delay, &capacity) == 4)
 	{
-		char lastNode = 'A';
+		if (dest > lastNode){
+			lastNode = dest;
+			numNodes++;
+		}
 
 		int row = src - 'A';
 		int col = dest - 'A';
@@ -178,7 +184,7 @@ int main()
 		graphMFC[row][col] = capacity;
 		graphMFC[col][row] = capacity;
 
-		nEdge++;
+		
 	}
 	// cout << "myArray" << endl;
 	// for (int i = 0; i < 4; i++)
@@ -214,7 +220,7 @@ int main()
 		end = input2 - 'A';
 	}
 
-	cout << "number of edges " << nEdge << endl;
+	cout << "number of nodes " << numNodes << endl;
 	cout << "vecotr has this info:\n";
 	for (int i = 0; i < pathsTaken.size(); i++)
 	{
