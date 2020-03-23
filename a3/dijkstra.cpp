@@ -159,7 +159,7 @@ int main()
 
 	// making above shown graph
 
-	g.shortestPath(0);
+	g.shortestPath(1);
 
 	return 0;
 }

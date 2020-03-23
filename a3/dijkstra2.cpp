@@ -5,9 +5,17 @@
 #include <stdio.h>
 #include <limits.h>
 #include <iostream>
+#include <vector>
 using namespace std;
 // Number of vertices in the graph
 #define V 4
+
+struct ShortestPath{
+	char src;
+	int hops,propDelay,cost;
+	vector<char>nodes;
+};
+
 
 // A utility function to find the vertex with minimum distance
 // value, from the set of vertices not yet included in shortest
@@ -24,60 +32,64 @@ int minDistance(int dist[], bool sptSet[])
 	return min_index;
 }
 char convertIntToABC(int src)
-	{
-		char letter;
-		string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		if (src >= 0 && src < 26)
-			letter = alphabet[src];
-		return letter;
-	}
+{
+	char letter;
+	string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	if (src >= 0 && src < 26)
+		letter = alphabet[src];
+	return letter;
+}
 
 // Function to print shortest path from source to j
 // using parent array
 void printPath(int parent[], int j)
 {
+
 	// Base Case : If j is source
 	if (parent[j] == -1)
+	{
 		return;
+	}
 
 	printPath(parent, parent[j]);
 
-	printf("%d ", j);
+	printf("%c ", convertIntToABC(j));
 }
 
 // A utility function to print the constructed distance
 // array
-void printSolution(int dist[], int n, int parent[])
+void printSolution(int dist[], int n, int parent[], int src,int end)
 {
-	int src = 0;
+	//int src = 0;
+	char source = convertIntToABC(src);
 	printf("Vertex\t      Distance\t       Path");
-	for (int i = 0; i < V; i++)
-	{
-		printf("\n%c -> %c \t\t %d\t\t%d ", convertIntToABC(src), convertIntToABC(i), dist[i], src);
-		printPath(parent, i);
-	}
+	//for (int i = 0; i < V; i++)
+	//{
+		printf("\n%c -> %c \t\t %d\t\t%c ", convertIntToABC(src), convertIntToABC(end), dist[end], source);
+		printPath(parent, end);
+	//}
 	printf("\n");
 }
 
 // Funtion that implements Dijkstra's single source shortest path
 // algorithm for a graph represented using adjacency matrix
 // representation
-void dijkstra(int graph[V][V], int src, int numEdges)
+void dijkstra(int graph[V][V], int src, int numEdges,int dist[],int parent[])
 {
-	int dist[V]; // The output array. dist[i] will hold
-				 // the shortest distance from src to i
+	// int dist[V]; // The output array. dist[i] will hold
+		// the shortest distance from src to i
 
 	// sptSet[i] will true if vertex i is included / in shortest
 	// path tree or shortest distance from src to i is finalized
 	bool sptSet[V];
 
 	// Parent array to store shortest path tree
-	int parent[V];
+	// int parent[V];
 
 	// Initialize all distances as INFINITE and stpSet[] as false
 	for (int i = 0; i < V; i++)
 	{
-		parent[0] = -1;
+		parent[src] = -1;
 		dist[i] = INT_MAX;
 		sptSet[i] = false;
 	}
@@ -113,15 +125,21 @@ void dijkstra(int graph[V][V], int src, int numEdges)
 	}
 
 	// print the constructed distance array
-	printSolution(dist, V, parent);
+	//printSolution(dist, V, parent, src);
+	
 }
 
 // driver program to test above function
 int main()
 {
+	int dist[V];
+int parent[V];
 	/* Let us create the example graph discussed above */
 
-	int graph2[V][V]={0};
+	int graphSHPF[V][V] = {0};
+	int graphSDPF[V][V] = {0};
+	int graphLLP[V][V] = {0};
+	int graphMFC[V][V] = {0};
 
 	FILE *file;
 	file = fopen("topology2.dat", "r");
@@ -130,12 +148,21 @@ int main()
 	int delay, capacity;
 	while (fscanf(file, "%c %c %d %d\n", &src, &dest, &delay, &capacity) == 4)
 	{
-		 int row = src - 'A';
-		 int col = dest - 'A';
-		 //delay = 1;
-		graph2[row][col] = delay;
-		graph2[col][row] = delay;
-	
+		int row = src - 'A';
+		int col = dest - 'A';
+
+		graphSHPF[row][col] = 1;
+		graphSHPF[col][row] = 1;
+
+		graphSDPF[row][col] = delay;
+		graphSDPF[col][row] = delay;
+
+		graphLLP[row][col] = capacity;
+		graphLLP[col][row] = capacity;
+
+		graphMFC[row][col] = capacity;
+		graphMFC[col][row] = capacity;
+
 		nEdge++;
 	}
 	// cout << "myArray" << endl;
@@ -152,9 +179,17 @@ int main()
 	//cout << "is is = " << nEdge << endl;
 
 	fclose(file);
-
-	dijkstra(graph2, 0,(nEdge-1));
-	cout << "number of edges "<< nEdge<< endl;
+	char input1,input2;
+	int start,end;
+	cout << "enter a starting point (A,B,C,D): ";
+	cin >> input1;
+	cout << "enter an end point (A,B,C,D): ";
+	cin >> input2;
+	start = input1 - 'A';
+	end = input2 - 'A';
+	dijkstra(graphSHPF, start, V,dist,parent);
+	printSolution(dist, V, parent, start,end);
+	cout << "number of edges " << nEdge << endl;
 
 	return 0;
 }

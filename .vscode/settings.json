@@ -4,6 +4,7 @@
         "__locale": "cpp",
         "algorithm": "cpp",
         "stdexcept": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "vector": "cpp"
     }
 }
