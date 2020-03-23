@@ -73,7 +73,7 @@ int main()
     EventList[j].callid = j;
     EventList[j].source = src2;
     EventList[j].destination = dst2;
-    EventList[j].duration = durationTime;
+    EventList[j].duration = arriveTime +durationTime;
     numevents++;
   }
   fclose(fp2);

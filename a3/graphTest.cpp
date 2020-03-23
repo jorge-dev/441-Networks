@@ -52,7 +52,6 @@ struct Graph *createGraph(struct Edge edges[MAX_SIZE], int n)
         char dest = edges[i].dest;
         int propDelay = edges[i].propDelay;
         int capacity = edges[i].capacity;
-        //cout << "src = " << src << " dest = " << dest << " propDealy = " << propDelay << "capacity" << capacity << endl;
 
         // allocate new node of Adjacency List from src to dest
         struct Node *newNode = (struct Node *)malloc(sizeof(struct Node));
@@ -92,8 +91,6 @@ void printGraph(struct Graph *graph, int numEdges)
         struct Node *ptr = graph->head[i];
         while (ptr != NULL)
         {
-            //printf("%c -> %c (%.4f)\t", i, ptr->dest, ptr->propDelay );
-
             printf("%c -> %c (capacity is %d)(delay is %d)\t", i, ptr->dest, ptr->capacity, ptr->propDelay);
             ptr = ptr->next;
         }
@@ -105,27 +102,11 @@ void printGraph(struct Graph *graph, int numEdges)
 // Weighted Directed Graph Implementation in C
 int main(void)
 {
-    // input array containing edges of the graph (as per above diagram)
-    // (x, y, w) tuple in the array represents an edge from x to y having weight w
-    // struct Edge edges[] =
-    //     {
-    //         {'A', 'B', 10, 5},
-    //         {'A', 'C', 15, 2},
-    //         {'B', 'C', 20, 6},
-    //         {'B', 'D', 30, 8},
-    //         {'C', 'D', 8, 5},
-    //     };
-    // cout << endl
-    //      << "this is OG array struct" << endl;
-    // for (int i = 0; i < 5; i++)
-    // {
-    //     cout << edges2[i].src << " " << edges2[i].dest << " " << edges2[i].propDelay << " " << edges2[i].capacity << endl;
-    // }
 
     struct Edge edges[MAX_SIZE];
 
-    FILE *file;                         //variable for file dsecriptor
-    file = fopen("topology2.dat", "r"); //”r” for reading
+    FILE *file;
+    file = fopen("topology2.dat", "r");
     int nEdge = 0;
     char src, dest;
     int delay, capacity;
