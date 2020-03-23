@@ -6,16 +6,16 @@
 #include <limits.h>
 #include <iostream>
 #include <vector>
+#include <algorithm>
 using namespace std;
 // Number of vertices in the graph
 #define V 4
 
-struct ShortestPath{
-	char src;
-	int hops,propDelay,cost;
-	vector<char>nodes;
-};
-
+// struct pathsTaken{
+// 	char src;
+// 	int hops,propDelay,cost;
+// 	vector<char>nodes;
+// };
 
 // A utility function to find the vertex with minimum distance
 // value, from the set of vertices not yet included in shortest
@@ -42,31 +42,45 @@ char convertIntToABC(int src)
 
 // Function to print shortest path from source to j
 // using parent array
-void printPath(int parent[], int j)
+void printPath(int parent[], int j, string &paths)
 {
-
+	char node;
 	// Base Case : If j is source
 	if (parent[j] == -1)
 	{
 		return;
 	}
 
-	printPath(parent, parent[j]);
+	printPath(parent, parent[j], paths);
 
 	printf("%c ", convertIntToABC(j));
+	node = convertIntToABC(j);
+	paths += node;
+	//return paths;
 }
 
 // A utility function to print the constructed distance
 // array
-void printSolution(int dist[], int n, int parent[], int src,int end)
+void printSolution(int dist[], int n, int parent[], int src, int end, vector<string> &pathsTaken)
 {
+	string path(1, convertIntToABC(src));
 	//int src = 0;
 	char source = convertIntToABC(src);
 	printf("Vertex\t      Distance\t       Path");
 	//for (int i = 0; i < V; i++)
 	//{
-		printf("\n%c -> %c \t\t %d\t\t%c ", convertIntToABC(src), convertIntToABC(end), dist[end], source);
-		printPath(parent, end);
+	printf("\n%c -> %c \t\t %d\t\t%c ", convertIntToABC(src), convertIntToABC(end), dist[end], source);
+	printPath(parent, end, path);
+	cout << "\nthe path is " << path << endl;
+	if (find(pathsTaken.begin(), pathsTaken.end(), path) != pathsTaken.end())
+	{
+		printf("path is already taken\n");
+	}
+	else
+	{
+		pathsTaken.push_back(path);
+	}
+
 	//}
 	printf("\n");
 }
@@ -74,10 +88,10 @@ void printSolution(int dist[], int n, int parent[], int src,int end)
 // Funtion that implements Dijkstra's single source shortest path
 // algorithm for a graph represented using adjacency matrix
 // representation
-void dijkstra(int graph[V][V], int src, int numEdges,int dist[],int parent[])
+void dijkstra(int graph[V][V], int src, int numEdges, int dist[], int parent[])
 {
 	// int dist[V]; // The output array. dist[i] will hold
-		// the shortest distance from src to i
+	// the shortest distance from src to i
 
 	// sptSet[i] will true if vertex i is included / in shortest
 	// path tree or shortest distance from src to i is finalized
@@ -124,16 +138,15 @@ void dijkstra(int graph[V][V], int src, int numEdges,int dist[],int parent[])
 			}
 	}
 
-	// print the constructed distance array
-	//printSolution(dist, V, parent, src);
-	
+
 }
 
 // driver program to test above function
 int main()
 {
 	int dist[V];
-int parent[V];
+	int parent[V];
+	vector<string> pathsTaken;
 	/* Let us create the example graph discussed above */
 
 	int graphSHPF[V][V] = {0};
@@ -148,6 +161,8 @@ int parent[V];
 	int delay, capacity;
 	while (fscanf(file, "%c %c %d %d\n", &src, &dest, &delay, &capacity) == 4)
 	{
+		char lastNode = 'A';
+
 		int row = src - 'A';
 		int col = dest - 'A';
 
@@ -179,17 +194,32 @@ int parent[V];
 	//cout << "is is = " << nEdge << endl;
 
 	fclose(file);
-	char input1,input2;
-	int start,end;
+	char input1, input2;
+	int start, end;
 	cout << "enter a starting point (A,B,C,D): ";
 	cin >> input1;
 	cout << "enter an end point (A,B,C,D): ";
 	cin >> input2;
 	start = input1 - 'A';
 	end = input2 - 'A';
-	dijkstra(graphSHPF, start, V,dist,parent);
-	printSolution(dist, V, parent, start,end);
+	while (input1 != '0' || input2 != '0')
+	{
+		dijkstra(graphSHPF, start, V, dist, parent);
+		printSolution(dist, V, parent, start, end, pathsTaken);
+		cout << "enter a starting point (A,B,C,D): ";
+		cin >> input1;
+		cout << "enter an end point (A,B,C,D): ";
+		cin >> input2;
+		start = input1 - 'A';
+		end = input2 - 'A';
+	}
+
 	cout << "number of edges " << nEdge << endl;
+	cout << "vecotr has this info:\n";
+	for (int i = 0; i < pathsTaken.size(); i++)
+	{
+		cout << i << " " << pathsTaken[i] << endl;
+	}
 
 	return 0;
 }
