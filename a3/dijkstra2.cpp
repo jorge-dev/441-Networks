@@ -9,7 +9,7 @@
 #include <algorithm>
 using namespace std;
 // Number of vertices in the graph
-#define V 4
+#define V 26
 
 
 // struct pathsTaken{
@@ -164,14 +164,15 @@ int main()
 	// int graphMFC[V][V] = {0};
 
 	FILE *file;
-	file = fopen("topology2.dat", "r");
+	file = fopen("topology.dat", "r");
 	int numNodes = 1;
 	char src, dest;
 	int delay, capacity;
 		char lastNode = 'A';
-
+int i = 0;
 	while (fscanf(file, "%c %c %d %d\n", &src, &dest, &delay, &capacity) == 4)
 	{
+			//cout<<"Did you get here"<< i <<endl;
 		if (dest > lastNode){
 			lastNode = dest;
 			numNodes++;
@@ -179,6 +180,10 @@ int main()
 
 		int row = src - 'A';
 		int col = dest - 'A';
+		//cout << "row = " << row << "\t";
+		//cout << "column = " << col <<endl;
+		
+
 
 		graphSHPF[row][col] = 1;
 		graphSHPF[col][row] = 1;
@@ -191,13 +196,12 @@ int main()
 
 		graphMFC[row][col] = capacity;
 		graphMFC[col][row] = capacity;
-
+i++;
 		
 	}
-	graphSHPF.resize(numNodes, vector<int>(numNodes));
-	graphSDPF.resize(numNodes, vector<int>(numNodes));
-	graphLLP.resize(numNodes, vector<int>(numNodes));
-	graphMFC.resize(numNodes, vector<int>(numNodes));
+	//cout << "lastnode " << lastNode<<endl;
+
+	
 
 
 
