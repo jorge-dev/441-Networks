@@ -89,20 +89,21 @@ void printSolution(int dist[], int n, int parent[], int src, int end, vector<str
 // Funtion that implements Dijkstra's single source shortest path
 // algorithm for a graph represented using adjacency matrix
 // representation
-void dijkstra(int graph[V][V], int src, int numEdges, int dist[], int parent[])
+void dijkstra(vector <vector<int> > graph, int src, int numEdges, int dist[], int parent[])
 {
+	
 	// int dist[V]; // The output array. dist[i] will hold
 	// the shortest distance from src to i
 
 	// sptSet[i] will true if vertex i is included / in shortest
 	// path tree or shortest distance from src to i is finalized
-	bool sptSet[V];
+	bool sptSet[numEdges];
 
 	// Parent array to store shortest path tree
 	// int parent[V];
 
 	// Initialize all distances as INFINITE and stpSet[] as false
-	for (int i = 0; i < V; i++)
+	for (int i = 0; i < numEdges; i++)
 	{
 		parent[src] = -1;
 		dist[i] = INT_MAX;
@@ -113,7 +114,7 @@ void dijkstra(int graph[V][V], int src, int numEdges, int dist[], int parent[])
 	dist[src] = 0;
 
 	// Find shortest path for all vertices
-	for (int count = 0; count < V - 1; count++)
+	for (int count = 0; count < numEdges - 1; count++)
 	{
 		// Pick the minimum distance vertex from the set of
 		// vertices not yet processed. u is always equal to src
@@ -125,18 +126,20 @@ void dijkstra(int graph[V][V], int src, int numEdges, int dist[], int parent[])
 
 		// Update dist value of the adjacent vertices of the
 		// picked vertex.
-		for (int v = 0; v < V; v++)
+		for (int v = 0; v < numEdges; v++){
 
 			// Update dist[v] only if is not in sptSet, there is
 			// an edge from u to v, and total weight of path from
 			// src to v through u is smaller than current value of
 			// dist[v]
 			if (!sptSet[v] && graph[u][v] &&
-				dist[u] + graph[u][v] < dist[v])
+				(dist[u] + graph[u][v]) < dist[v])
 			{
+
 				parent[v] = u;
 				dist[v] = dist[u] + graph[u][v];
 			}
+		}
 	}
 
 
@@ -150,10 +153,15 @@ int main()
 	vector<string> pathsTaken;
 	/* Let us create the example graph discussed above */
 
-	int graphSHPF[V][V] = {0};
-	int graphSDPF[V][V] = {0};
-	int graphLLP[V][V] = {0};
-	int graphMFC[V][V] = {0};
+	vector< vector<int> > graphSHPF(V , vector<int> (V,0));
+	vector< vector<int> > graphSDPF(V , vector<int> (V,0));
+	vector< vector<int> > graphLLP(V , vector<int> (V,0));
+	vector< vector<int> > graphMFC(V , vector<int> (V,0));
+	
+	// int graphSHPF[V][V] = {0};
+	// int graphSDPF[V][V] = {0};
+	// int graphLLP[V][V] = {0};
+	// int graphMFC[V][V] = {0};
 
 	FILE *file;
 	file = fopen("topology2.dat", "r");
@@ -186,6 +194,13 @@ int main()
 
 		
 	}
+	graphSHPF.resize(numNodes, vector<int>(numNodes));
+	graphSDPF.resize(numNodes, vector<int>(numNodes));
+	graphLLP.resize(numNodes, vector<int>(numNodes));
+	graphMFC.resize(numNodes, vector<int>(numNodes));
+
+
+
 	// cout << "myArray" << endl;
 	// for (int i = 0; i < 4; i++)
 	// {
@@ -208,24 +223,24 @@ int main()
 	cin >> input2;
 	start = input1 - 'A';
 	end = input2 - 'A';
-	while (input1 != '0' || input2 != '0')
-	{
-		dijkstra(graphSHPF, start, V, dist, parent);
-		printSolution(dist, V, parent, start, end, pathsTaken);
-		cout << "enter a starting point (A,B,C,D): ";
-		cin >> input1;
-		cout << "enter an end point (A,B,C,D): ";
-		cin >> input2;
-		start = input1 - 'A';
-		end = input2 - 'A';
-	}
+	// while (input1 != '0' || input2 != '0')
+	// {
+		dijkstra(graphSHPF, start, numNodes, dist, parent);
+		printSolution(dist, numNodes, parent, start, end, pathsTaken);
+		// cout << "enter a starting point (A,B,C,D): ";
+		// cin >> input1;
+		// cout << "enter an end point (A,B,C,D): ";
+		// cin >> input2;
+		// start = input1 - 'A';
+		// end = input2 - 'A';
+	// }
 
 	cout << "number of nodes " << numNodes << endl;
 	cout << "vecotr has this info:\n";
-	for (int i = 0; i < pathsTaken.size(); i++)
-	{
-		cout << i << " " << pathsTaken[i] << endl;
-	}
+	// for (int i = 0; i < pathsTaken.size(); i++)
+	// {
+	// 	cout << i << " " << pathsTaken[i] << endl;
+	// }
 
 	return 0;
 }
