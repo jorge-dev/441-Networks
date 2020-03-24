@@ -10,13 +10,166 @@
 using namespace std;
 // Number of vertices in the graph
 #define V 26
+#define MAX_EVENTS 15000
+#define START_EVENT 'S'
+#define END_EVENT 'E'
 
+int propdelay[V][V];
+int pathCapacity[V][V];
+int available[V][V];
+int cost[V][V];
 
-// struct pathsTaken{
-// 	char src;
-// 	int hops,propDelay,cost;
-// 	vector<char>nodes;
-// };
+struct InfoPaths
+{
+	vector<string> pathsTaken;
+	long int numOfHops;
+} pathInfo;
+struct Event
+{
+	float event_time;
+	char event_type;
+	int callid;
+	char source;
+	char destination;
+	float duration;
+} EventList[MAX_EVENTS];
+
+//Function prototypes
+void dijkstra(vector<vector<int>> graph, int src, int numEdges, int dist[], int parent[]);
+int minDistance(int dist[], bool sptSet[]);
+char convertIntToABC(int src);
+void printPath(int parent[], int j, string &paths);
+void printSolution(int dist[], int n, int parent[], int src, int end, InfoPaths &pathInfo);
+int RouteCall(char src, char dst);
+int ReleasedCall(char src, char dst);
+
+// driver program to test above function
+int main()
+{
+	int dist[V];
+	int parent[V];
+	int numEvents = 0;
+
+	/* Let us create the example graph discussed above */
+
+	vector<vector<int>> graphSHPF(V, vector<int>(V, 0));
+	vector<vector<int>> graphSDPF(V, vector<int>(V, 0));
+	vector<vector<int>> graphLLP(V, vector<int>(V, 0));
+	vector<vector<int>> graphMFC(V, vector<int>(V, 0));
+
+	FILE *file;
+	file = fopen("topology.dat", "r");
+	int numNodes = 1;
+	char src, dest;
+	int delay, capacity;
+	char lastNode = 'A';
+	int i = 0;
+	while (fscanf(file, "%c %c %d %d\n", &src, &dest, &delay, &capacity) == 4)
+	{
+
+		if (dest > lastNode)
+		{
+			lastNode = dest;
+			numNodes++;
+		}
+
+		int row = src - 'A';
+		int col = dest - 'A';
+
+		propdelay[row][col] = delay;
+		propdelay[col][row] = delay;
+		pathCapacity[row][col] = capacity;
+		pathCapacity[col][row] = capacity;
+		available[row][col] = capacity;
+		available[col][row] = capacity;
+
+		graphSHPF[row][col] = 1;
+		graphSHPF[col][row] = 1;
+
+		graphSDPF[row][col] = delay;
+		graphSDPF[col][row] = delay;
+
+		graphLLP[row][col] = capacity;
+		graphLLP[col][row] = capacity;
+
+		graphMFC[row][col] = capacity;
+		graphMFC[col][row] = capacity;
+		i++;
+	}
+
+	fclose(file);
+
+	/* Next read in the calls from "callworkload.dat" and set up events */
+	FILE *file2 = fopen("callworkload.dat", "r");
+	int j = 0;
+
+	char src2, dst2;
+	float arriveTime, durationTime;
+	while ((j = fscanf(file2, "%f %c %c %f\n", &arriveTime, &src2, &dst2, &durationTime)) == 4)
+	{
+		EventList[j].event_time = arriveTime;
+		EventList[j].event_type = 'S';
+		EventList[j].callid = j;
+		EventList[j].source = src2;
+		EventList[j].destination = dst2;
+		EventList[j].duration = arriveTime + durationTime;
+		numEvents++;
+	}
+	fclose(file2);
+
+	int successCall = 0, blockedCall = 0;
+	for (int i = 0; i < numEvents; i++)
+	{
+		if (EventList[i].event_type == START_EVENT)
+		{
+			if (RouteCall(EventList[i].source, EventList[i].destination) != -1)
+			{
+				successCall++;
+			}
+			else
+			{
+				blockedCall++;
+			}
+		}
+		else
+		{
+			ReleasedCall(EventList[i].source, EventList[i].destination);
+		}
+	}
+
+	char input1, input2;
+	int start, end;
+	cout << "enter a starting point (A,B,C,D): ";
+	cin >> input1;
+	cout << "enter an end point (A,B,C,D): ";
+	cin >> input2;
+	start = input1 - 'A';
+	end = input2 - 'A';
+
+	dijkstra(graphSHPF, start, numNodes, dist, parent);
+	printSolution(dist, numNodes, parent, start, end, pathInfo);
+
+	cout << "number of nodes " << numNodes << endl;
+	cout << "number of events " << numEvents << endl;
+	// cout << "The number of hops from "<< pathInfo.pathsTaken[0].at(0) << " to "<< pathInfo.pathsTaken[0].at(pathInfo.pathsTaken[0].length()-1)<<" is "<<
+	// 		pathInfo.numOfHops << " for this path "<< pathInfo.pathsTaken[0]<<endl;
+	//cout << "vecotr has this info:\n";
+
+	graphSHPF.clear();
+	graphSDPF.clear();
+	graphLLP.clear();
+	graphMFC.clear();
+
+	return 0;
+}
+
+//=======================================================================
+//							Functions
+//=======================================================================
+
+int RouteCall(char src,char dst){
+	return 1;
+}
 
 // A utility function to find the vertex with minimum distance
 // value, from the set of vertices not yet included in shortest
@@ -62,7 +215,7 @@ void printPath(int parent[], int j, string &paths)
 
 // A utility function to print the constructed distance
 // array
-void printSolution(int dist[], int n, int parent[], int src, int end, vector<string> &pathsTaken)
+void printSolution(int dist[], int n, int parent[], int src, int end, InfoPaths &pathInfo)
 {
 	string path(1, convertIntToABC(src));
 	//int src = 0;
@@ -73,13 +226,15 @@ void printSolution(int dist[], int n, int parent[], int src, int end, vector<str
 	printf("\n%c -> %c \t\t %d\t\t%c ", convertIntToABC(src), convertIntToABC(end), dist[end], source);
 	printPath(parent, end, path);
 	cout << "\nthe path is " << path << endl;
-	if (find(pathsTaken.begin(), pathsTaken.end(), path) != pathsTaken.end())
+	if (find(pathInfo.pathsTaken.begin(), pathInfo.pathsTaken.end(), path) != pathInfo.pathsTaken.end())
 	{
 		printf("path is already taken\n");
 	}
 	else
 	{
-		pathsTaken.push_back(path);
+		pathInfo.pathsTaken.push_back(path);
+		pathInfo.numOfHops = path.length();
+		//printf("the number oh hops was %lu", path.length());
 	}
 
 	//}
@@ -89,9 +244,9 @@ void printSolution(int dist[], int n, int parent[], int src, int end, vector<str
 // Funtion that implements Dijkstra's single source shortest path
 // algorithm for a graph represented using adjacency matrix
 // representation
-void dijkstra(vector <vector<int> > graph, int src, int numEdges, int dist[], int parent[])
+void dijkstra(vector<vector<int>> graph, int src, int numEdges, int dist[], int parent[])
 {
-	
+
 	// int dist[V]; // The output array. dist[i] will hold
 	// the shortest distance from src to i
 
@@ -126,7 +281,8 @@ void dijkstra(vector <vector<int> > graph, int src, int numEdges, int dist[], in
 
 		// Update dist value of the adjacent vertices of the
 		// picked vertex.
-		for (int v = 0; v < numEdges; v++){
+		for (int v = 0; v < numEdges; v++)
+		{
 
 			// Update dist[v] only if is not in sptSet, there is
 			// an edge from u to v, and total weight of path from
@@ -141,110 +297,4 @@ void dijkstra(vector <vector<int> > graph, int src, int numEdges, int dist[], in
 			}
 		}
 	}
-
-
-}
-
-// driver program to test above function
-int main()
-{
-	int dist[V];
-	int parent[V];
-	vector<string> pathsTaken;
-	/* Let us create the example graph discussed above */
-
-	vector< vector<int> > graphSHPF(V , vector<int> (V,0));
-	vector< vector<int> > graphSDPF(V , vector<int> (V,0));
-	vector< vector<int> > graphLLP(V , vector<int> (V,0));
-	vector< vector<int> > graphMFC(V , vector<int> (V,0));
-	
-	// int graphSHPF[V][V] = {0};
-	// int graphSDPF[V][V] = {0};
-	// int graphLLP[V][V] = {0};
-	// int graphMFC[V][V] = {0};
-
-	FILE *file;
-	file = fopen("topology.dat", "r");
-	int numNodes = 1;
-	char src, dest;
-	int delay, capacity;
-		char lastNode = 'A';
-int i = 0;
-	while (fscanf(file, "%c %c %d %d\n", &src, &dest, &delay, &capacity) == 4)
-	{
-			//cout<<"Did you get here"<< i <<endl;
-		if (dest > lastNode){
-			lastNode = dest;
-			numNodes++;
-		}
-
-		int row = src - 'A';
-		int col = dest - 'A';
-		//cout << "row = " << row << "\t";
-		//cout << "column = " << col <<endl;
-		
-
-
-		graphSHPF[row][col] = 1;
-		graphSHPF[col][row] = 1;
-
-		graphSDPF[row][col] = delay;
-		graphSDPF[col][row] = delay;
-
-		graphLLP[row][col] = capacity;
-		graphLLP[col][row] = capacity;
-
-		graphMFC[row][col] = capacity;
-		graphMFC[col][row] = capacity;
-i++;
-		
-	}
-	//cout << "lastnode " << lastNode<<endl;
-
-	
-
-
-
-	// cout << "myArray" << endl;
-	// for (int i = 0; i < 4; i++)
-	// {
-	// 	for (int j = 0; j < 4; j++)
-	// 	{
-
-	// 		// Prints ' ' if j != n-1 else prints '\n'
-	// 		cout << graph2[i][j] << " ";
-	// 	}
-	// 	cout << endl;
-	// }
-	//cout << "is is = " << nEdge << endl;
-
-	fclose(file);
-	char input1, input2;
-	int start, end;
-	cout << "enter a starting point (A,B,C,D): ";
-	cin >> input1;
-	cout << "enter an end point (A,B,C,D): ";
-	cin >> input2;
-	start = input1 - 'A';
-	end = input2 - 'A';
-	// while (input1 != '0' || input2 != '0')
-	// {
-		dijkstra(graphSHPF, start, numNodes, dist, parent);
-		printSolution(dist, numNodes, parent, start, end, pathsTaken);
-		// cout << "enter a starting point (A,B,C,D): ";
-		// cin >> input1;
-		// cout << "enter an end point (A,B,C,D): ";
-		// cin >> input2;
-		// start = input1 - 'A';
-		// end = input2 - 'A';
-	// }
-
-	cout << "number of nodes " << numNodes << endl;
-	cout << "vecotr has this info:\n";
-	// for (int i = 0; i < pathsTaken.size(); i++)
-	// {
-	// 	cout << i << " " << pathsTaken[i] << endl;
-	// }
-
-	return 0;
 }
