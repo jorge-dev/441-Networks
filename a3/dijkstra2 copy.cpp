@@ -38,18 +38,17 @@ struct Event
 void dijkstra(vector<vector<int>> graph, int src, int numEdges, int dist[], int parent[]);
 int minDistance(int dist[], bool sptSet[]);
 char convertIntToABC(int src);
-void printPath(int parent[], int j, string &paths);
-void printSolution(int dist[], int n, int parent[], int src, int end, InfoPaths &pathInfo);
-int RouteCall(char src, char dst);
+void getShortPath(int parent[], int j, string &paths);
+int storeShortPath(int dist[], int n, int parent[], int src, int end, InfoPaths &pathInfo);
+int RouteCall(char src, char dst, vector<vector<int>> graph, int numEdges,InfoPaths &pathInfo);
 int ReleasedCall(char src, char dst);
 
 // driver program to test above function
 int main()
 {
-	int dist[V];
-	int parent[V];
+	
 	int numEvents = 0;
-	InfoPaths pathInfo;
+
 	/* Let us create the example graph discussed above */
 
 	vector<vector<int>> graphSHPF(V, vector<int>(V, 0));
@@ -102,9 +101,9 @@ int main()
 	/* Next read in the calls from "callworkload.dat" and set up events */
 	FILE *file2 = fopen("callworkload.dat", "r");
 	int j = 0;
-
 	char src2, dst2;
 	float arriveTime, durationTime;
+	
 	while (fscanf(file2, "%f %c %c %f\n", &arriveTime, &src2, &dst2, &durationTime) == 4)
 	{
 		EventList[j].event_time = arriveTime;
@@ -117,60 +116,53 @@ int main()
 		j++;
 	}
 	fclose(file2);
+			printf("srcrr is %c and dest is %c\n",EventList[0].source, EventList[0].destination);
 
 	int successCall = 0, blockedCall = 0;
-	// for (int i = 0; i < numEvents; i++)
-	// {
-	// 	if (EventList[i].event_type == START_EVENT)
-	// 	{
-	// 		if (RouteCall(EventList[i].source, EventList[i].destination) != -1)
-	// 		{
-	// 			successCall++;
-	// 		}
-	// 		else
-	// 		{
-	// 			blockedCall++;
-	// 		}
-	// 	}
-	// 	else
-	// 	{
-	// 		ReleasedCall(EventList[i].source, EventList[i].destination);
-	// 	}
-	// }
-
-	char input1, input2;
-	int start, end;
-	cout << "enter a starting point (A,B,C,D): ";
-	cin >> input1;
-	cout << "enter an end point (A,B,C,D): ";
-	cin >> input2;
-	start = input1 - 'A';
-	end = input2 - 'A';
-	for (int i = 0; i < 10; i++)
+	InfoPaths pathInfo;
+	for (int i = 0; i < numEvents; i++)
 	{
-		int start = EventList[i].source - 'A';
-		int end = EventList[i].destination - 'A';
-		//cout <<"start "<<convertIntToABC(start) <<" end "<<convertIntToABC(end)<<endl;
-	
+		if (EventList[i].event_type == START_EVENT)
+		{
+			//printf("src is %c and dest is %c\n",EventList[i].source, EventList[i].destination);
+			if (RouteCall(EventList[i].source, EventList[i].destination, graphSHPF, numNodes,pathInfo) != -1)
+			{
+				successCall++;
+			}
+			else
+			{
+				blockedCall++;
+			}
+		}
+		else
+		{
+			ReleasedCall(EventList[i].source, EventList[i].destination);
+		}
 	}
-	 dijkstra(graphSHPF, start, numNodes, dist, parent);
-	 printSolution(dist, numNodes, parent, start, end, pathInfo);
-	
-// int start = EventList
-// 	dijkstra(graphSHPF, start, numNodes, dist, parent);
-// 	printSolution(dist, numNodes, parent, start, end, pathInfo);
+
+	// char input1, input2;
+	// int start, end;
+	// cout << "enter a starting point (A,B,C,D): ";
+	// cin >> input1;
+	// cout << "enter an end point (A,B,C,D): ";
+	// cin >> input2;
+	// start = input1 - 'A';
+	// end = input2 - 'A';
+
+	// dijkstra(graphSHPF, start, numNodes, dist, parent);
+	// storeShortPath(dist, numNodes, parent, start, end, pathInfo);
 
 	cout << "number of nodes " << numNodes << endl;
 	cout << "number of events " << numEvents << endl;
-	// cout << "The number of hops from "<< pathInfo.pathsTaken[0].at(0) << " to "<< pathInfo.pathsTaken[0].at(pathInfo.pathsTaken[0].length()-1)<<" is "<<
-	// 		pathInfo.numOfHops << " for this path "<< pathInfo.pathsTaken[0]<<endl;
-	cout << "vecotr has this info:\n";
-	// for (int i = 0; i < pathInfo.pathsTaken.size(); i++)
-	// {
-	// 	cout <<i << " " << pathInfo.pathsTaken[i] <<endl;
-	// }
+	cout << "num of success calls "<< successCall <<endl;
+		cout << "num of blocked calls "<< blockedCall <<endl;
 	
-
+	//cout << "vector has this info:\n";
+	for (int i = 0; i < pathInfo.pathsTaken.size(); i++)
+	{
+		cout << i << " " << pathInfo.pathsTaken[i]<<endl;
+	}
+	
 	graphSHPF.clear();
 	graphSDPF.clear();
 	graphLLP.clear();
@@ -183,12 +175,42 @@ int main()
 //							Functions
 //=======================================================================
 
-int RouteCall(char src,char dst){
-	return 1;
+int RouteCall(char src, char dst, vector<vector<int>> graph, int numEdges,InfoPaths &pathInfo)
+{
+	int dist[V];
+	int parent[V];
+	int success = 1;
+	int source = src-'A';
+	int destination = dst-'A';
+	//cout << "the source is "<< source << "and dest is " << destination << endl;
+	 dijkstra(graph, src, numEdges, dist, parent);
+	//  success =storeShortPath(dist, 0, parent, source, destination,  pathInfo);
+	// return success;
+	string path(1, src);
+	
+	//char source = convertIntToABC(src);
+	
+	getShortPath(parent, destination, path);
+	//cout << "\nthe path is " << path << endl;
+	// if (find(pathInfo.pathsTaken.begin(), pathInfo.pathsTaken.end(), path) != pathInfo.pathsTaken.end())
+	// {
+	// 	printf("path is already taken\n");
+	// 	return -1;
+	// }
+	// else
+	// {
+		pathInfo.pathsTaken.push_back(path);
+		pathInfo.numOfHops = path.length();
+		return 1;
+		//printf("the number oh hops was %lu", path.length());
+	//}
 }
+
 int ReleasedCall(char src, char dst){
-	return 1;
+	return 0;
 }
+
+
 // A utility function to find the vertex with minimum distance
 // value, from the set of vertices not yet included in shortest
 // path tree
@@ -214,18 +236,19 @@ char convertIntToABC(int src)
 
 // Function to print shortest path from source to j
 // using parent array
-void printPath(int parent[], int j, string &paths)
+void getShortPath(int parent[], int j, string &paths)
 {
 	char node;
+	cout << "inside get short path the end is "<< convertIntToABC(j)<< endl;
 	// Base Case : If j is source
 	if (parent[j] == -1)
 	{
 		return;
 	}
 
-	printPath(parent, parent[j], paths);
+	getShortPath(parent, parent[j], paths);
 
-	printf("%c ", convertIntToABC(j));
+	//printf("%c ", convertIntToABC(j));
 	node = convertIntToABC(j);
 	paths += node;
 	//return paths;
@@ -233,30 +256,32 @@ void printPath(int parent[], int j, string &paths)
 
 // A utility function to print the constructed distance
 // array
-void printSolution(int dist[], int n, int parent[], int src, int end, InfoPaths &pathInfo)
+int storeShortPath(int dist[], int n, int parent[], int src, int end, InfoPaths &pathInfo)
 {
 	string path(1, convertIntToABC(src));
 	//int src = 0;
 	char source = convertIntToABC(src);
-	printf("Vertex\t      Distance\t       Path");
+	//printf("Vertex\t      Distance\t       Path");
 	//for (int i = 0; i < V; i++)
 	//{
-	printf("\n%c -> %c \t\t %d\t\t%c ", convertIntToABC(src), convertIntToABC(end), dist[end], source);
-	printPath(parent, end, path);
-	cout << "\nthe path is " << path << endl;
+	//printf("\n%c -> %c \t\t %d\t\t%c ", convertIntToABC(src), convertIntToABC(end), dist[end], source);
+	getShortPath(parent, end, path);
+	//cout << "\nthe path is " << path << endl;
 	if (find(pathInfo.pathsTaken.begin(), pathInfo.pathsTaken.end(), path) != pathInfo.pathsTaken.end())
 	{
 		printf("path is already taken\n");
+		return -1;
 	}
 	else
 	{
 		pathInfo.pathsTaken.push_back(path);
 		pathInfo.numOfHops = path.length();
+		return 1;
 		//printf("the number oh hops was %lu", path.length());
 	}
 
 	//}
-	printf("\n");
+	//printf("\n");
 }
 
 // Funtion that implements Dijkstra's single source shortest path
