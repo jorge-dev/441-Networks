@@ -105,17 +105,15 @@ float perfectSongsTotalTime = 0.0;
 float Uniform01();
 float Exponential(float mu);
 
-
-void handleBirdEvent(int state, int N, float Song_Duration_Mean);
+void BudgieEventHandler(int state, int N, float Song_Duration_Mean);
 
 bool isPerfectSong(int i);
-void updatePerfectTime();
 void updateStateTimes();
 void updateEventFrom(int stateIndex);
 void updatenumBirdsSinging(int currentBird);
 
 void calcMeanTimes(int state, float Song_Duration_Mean);
-void finalizeAllTimes();
+
 
 void printSimulationResults(int N, float Song_Duration_Mean);
 void printFinalTable(int N);
@@ -161,42 +159,44 @@ int main(int argc, char *argv[])
 	while (budgieEvent.currTime < MONTH)
 	{
 
-	
-
-	//Gets the necxt budgie event and also sets its time to "infinity"
-	budgieEvent.timeNext = INFINITE; 
-	for (int i = 0; i < N; i++)
-	{
-		if (budgieEvent.next[i] < budgieEvent.timeNext)
+		//Gets the necxt budgie event and also sets its time to "infinity"
+		budgieEvent.timeNext = INFINITE;
+		for (int i = 0; i < N; i++)
 		{
-			budgieEvent.timeNext = budgieEvent.next[i];
-			currEventElement = i;
+			if (budgieEvent.next[i] < budgieEvent.timeNext)
+			{
+				budgieEvent.timeNext = budgieEvent.next[i];
+				currEventElement = i;
+			}
 		}
-	}
 
-
-		/* Keep simulation running */
+		//decide whether to keep sim alive or terminate it
 		if (budgieEvent.timeNext < MONTH)
 		{
 
 			budgieEvent.currTime = budgieEvent.timeNext;
-			/* Update corresponding variables and state changes */
+			//Handle the budgie events according to its state
 			if (budgie.budgieStatus[currEventElement] == SINGING)
-				handleBirdEvent(SINGING, N, Song_Duration_Mean);
+				BudgieEventHandler(SINGING, N, Song_Duration_Mean);
 			else
-				handleBirdEvent(QUIET, N, Song_Duration_Mean);
+				BudgieEventHandler(QUIET, N, Song_Duration_Mean);
 		}
 
 		else
-			finalizeAllTimes(); /* Maximum time reached */
+		{
+			//Max time was reached and simulation is over
+			budgieEvent.currTime = MONTH;
+			updateStateTimes();
+			budgieEvent.prevTime = budgieEvent.currTime;
+		}
 	}
 	printSimulationResults(N, Song_Duration_Mean);
 	printFinalTable(N);
 }
 
-/*
-	Get a random number in between 0 and 1
-*/
+//Get a random number in between 0 and 1
+//Copied from the Barber example
+
 float Uniform01()
 {
 	/* Get a random (+) integer from rand() */
@@ -208,9 +208,9 @@ float Uniform01()
 	return randomNum;
 }
 
-/*
-	Exponential Variate
-*/
+//	Exponential Variate
+//Copied from the Barber example
+
 float Exponential(float mean)
 {
 
@@ -220,15 +220,8 @@ float Exponential(float mean)
 	return answer;
 }
 
-/*
-	Initializes all budgies to the quiet state before starting simulation.
-*/
-
-/*
-	Handles each corresponding budgieEvent, depending on the current state of the budgie, and will
-	update each corressponding time and then update the state of the budgie
-*/
-void handleBirdEvent(int state, int N, float Song_Duration_Mean)
+//THis will use the given event state and will update each time and state of that event
+void BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 {
 
 	if (state == SINGING)
@@ -236,18 +229,20 @@ void handleBirdEvent(int state, int N, float Song_Duration_Mean)
 		switch (numBirdsSinging)
 		{
 		case QUIET:
-			cout << "ERROR: No budgies singing." << endl; /* Lost track of the current budgie somehow */
+			cout << "Oops there are no budgies singing somehow." << endl;
 			break;
 		case SINGING:
-			updateStateTimes(); /* Melodious, 1 budgie singing */
+			updateStateTimes();
 			if (isPerfectSong(currEventElement))
 			{
 				numPerfectSongs++;
 			}
-			updatePerfectTime(); /* Cumulatively update the perfect time total */
+			//Update the perfectSongs total time
+			perfectSongsTotalTime += budgieEvent.currTime - budgieEvent.prevTime;
 			break;
-		default:				/* Sqwuaky */
-			updateStateTimes(); /* Sqwuaky, 2 or more budgies singing */
+		default:
+			//Sqwaky is the default
+			updateStateTimes();
 			break;
 		}
 		calcMeanTimes(QUIET, Song_Duration_Mean); /* Calculate exponentially mean quiet time  */
@@ -309,14 +304,6 @@ bool isPerfectSong(int i)
 }
 
 /*
-	Updates cumulatively the perfect time total
-*/
-void updatePerfectTime()
-{
-	perfectSongsTotalTime += budgieEvent.currTime - budgieEvent.prevTime;
-}
-
-/*
 	Updates the number of currently singing budgies, depending on what state change
 	the budgie is transitioning to
 */
@@ -350,17 +337,6 @@ void calcMeanTimes(int state, float Song_Duration_Mean)
 	}
 }
 
-/*
-	Finalizes and adds all the corresponding times one last time before the simulation
-	is done
-*/
-void finalizeAllTimes()
-{
-
-	budgieEvent.currTime = MONTH; /* Event time has reached the end */
-	updateStateTimes();
-	budgieEvent.prevTime = budgieEvent.currTime;
-}
 
 /*
 	Updates the state of the current budgie depending on what state it is
