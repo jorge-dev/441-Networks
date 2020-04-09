@@ -109,7 +109,7 @@ void BudgieEventHandler(int state, int N, float Song_Duration_Mean);
 
 bool isPerfectSong(int i);
 void updateStateTimes();
-void updatenumBirdsSinging(int currentBird);
+
 
 void calcMeanTimes(int state, float Song_Duration_Mean);
 
@@ -245,7 +245,9 @@ void BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 			break;
 		}
 		calcMeanTimes(QUIET, Song_Duration_Mean); /* Calculate exponentially mean quiet time  */
-		updatenumBirdsSinging(QUIET);			  /* One less singing budgie                    */
+		//budgie went quiet so theres one less singing
+		numBirdsSinging--;
+
 		//budgie went quit and the event will be updated
 		budgieEvent.prevTime = budgieEvent.currTime;
 		budgie.currSongEnd = budgieEvent.currTime;
@@ -267,7 +269,9 @@ void BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 			break;
 		}
 		calcMeanTimes(SINGING, Song_Duration_Mean); /* Calculate exponentially mean singing time */
-		updatenumBirdsSinging(SINGING);				/* One more singing budgie                     */
+		//budgie is singing so there's one more singing
+		numBirdsSinging++;
+
 		//budgie is singing and the event will be updated
 		budgieEvent.prevTime = budgieEvent.currTime;
 		budgie.currSongStart = budgieEvent.currTime;
@@ -308,20 +312,6 @@ bool isPerfectSong(int i)
 		perfectSong = false;
 
 	return perfectSong;
-}
-
-/*
-	Updates the number of currently singing budgies, depending on what state change
-	the budgie is transitioning to
-*/
-void updatenumBirdsSinging(int currentBird)
-{
-
-	if (currentBird == QUIET)
-		numBirdsSinging--;
-
-	else
-		numBirdsSinging++;
 }
 
 /*
