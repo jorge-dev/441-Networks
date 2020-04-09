@@ -127,9 +127,12 @@ int main()
 	// initAllBirdsToQuiet(); /* Before starting simulation, initialize all birds to
 	//   the QUIET state */
 	bird.birdStatus = vector <int>(N,QUIET);
-	float test = (1.0/QUIET_TIME_MEAN);
-	event.next = vector<float>(N,test);
-	
+	event.next = vector<float>(N,(1.0/QUIET_TIME_MEAN));
+	// for (int i = 0; i < N; i++)
+	// {
+	// 	bird.birdStatus[i] = QUIET;
+	// 	event.next[i] = Exponential(1.0 / QUIET_TIME_MEAN);
+	// }
 
 	srand(RANDOM_NUM_INIT); /* Set RANDOM_NUM_INIT for random number generation (for consistency) */
 	int r = Uniform01();	/* Call srand() before this line */
