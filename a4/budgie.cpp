@@ -109,7 +109,6 @@ void BudgieEventHandler(int state, int N, float Song_Duration_Mean);
 
 bool isPerfectSong(int i);
 void updateStateTimes();
-void updateEventFrom(int stateIndex);
 void updatenumBirdsSinging(int currentBird);
 
 void calcMeanTimes(int state, float Song_Duration_Mean);
@@ -247,7 +246,10 @@ void BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 		}
 		calcMeanTimes(QUIET, Song_Duration_Mean); /* Calculate exponentially mean quiet time  */
 		updatenumBirdsSinging(QUIET);			  /* One less singing budgie                    */
-		updateEventFrom(SINGING);				  /* This budgie is now quiet                   */
+		//budgie went quit and the event will be updated
+		budgieEvent.prevTime = budgieEvent.currTime;
+		budgie.currSongEnd = budgieEvent.currTime;
+	
 	}
 
 	else
@@ -266,7 +268,12 @@ void BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 		}
 		calcMeanTimes(SINGING, Song_Duration_Mean); /* Calculate exponentially mean singing time */
 		updatenumBirdsSinging(SINGING);				/* One more singing budgie                     */
-		updateEventFrom(QUIET);						/* This budgie is now singing				  */
+		//budgie is singing and the event will be updated
+		budgieEvent.prevTime = budgieEvent.currTime;
+		budgie.currSongStart = budgieEvent.currTime;
+		budgie.currSong = currEventElement;
+		numAttemptedSongs++;
+	
 	}
 }
 
@@ -334,27 +341,6 @@ void calcMeanTimes(int state, float Song_Duration_Mean)
 	{
 		budgie.budgieStatus[currEventElement] = SINGING; /* This budgie is singing, so calculate using mean for singing time */
 		budgieEvent.next[currEventElement] += Exponential(Song_Duration_Mean);
-	}
-}
-
-
-/*
-	Updates the state of the current budgie depending on what state it is
-	currently in
-*/
-void updateEventFrom(int stateIndex)
-{
-	if (stateIndex == QUIET)
-	{
-		budgieEvent.prevTime = budgieEvent.currTime;
-		budgie.currSongStart = budgieEvent.currTime;
-		budgie.currSong = currEventElement;
-		numAttemptedSongs++;
-	}
-	else
-	{
-		budgieEvent.prevTime = budgieEvent.currTime;
-		budgie.currSongEnd = budgieEvent.currTime;
 	}
 }
 
