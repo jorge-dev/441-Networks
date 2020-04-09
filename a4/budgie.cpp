@@ -52,12 +52,11 @@ using namespace std;
 /* Budgie states */
 #define QUIET 0
 #define SINGING 1
-#define SQUAWKY 2
+#define SQUAWKY 2 // this can be any number other than 2 and it will be the same
 
-/* Simlatoin constants */
-// #define N 3					   // number of Budgies in BLAN
+// Simlatoin constant
 #define QUIET_TIME_MEAN 30.0 // minutes
-//#define SONG_DURATION_MEAN 3.0 // minutes
+
 
 /* time constants for simmulation */
 #define DAY 1440.0		  //minutes in a day
@@ -99,29 +98,22 @@ float perfectSongsTotalTime = 0.0;
 #define RANDOM_NUM_INIT 104729
 
 /* Max integer */
-#define MAX INT_MAX
+#define MAX_INT INT_MAX
 
 /* Function prototypes */
 float Uniform01();
 float Exponential(float mu);
-
 void BudgieEventHandler(int state, int N, float Song_Duration_Mean);
-
-bool isPerfectSong(int i);
-void updateStateTimes();
-
-
-void calcMeanTimes(int state, float Song_Duration_Mean);
-
-
+bool checkIfSongIsPerfect(int i);
+void updateTotalTimes();
 void printSimulationResults(int N, float Song_Duration_Mean);
 void printFinalTable(int N);
 
 int main(int argc, char *argv[])
 {
 	//user can choose to change this two variables
-	int N;
-	float Song_Duration_Mean;
+	int N; // Number of Budgis in BLAN
+	float Song_Duration_Mean; // mean duration for every song in BlAN
 	if (argc == 1)
 	{
 		N = 3;
@@ -172,7 +164,6 @@ int main(int argc, char *argv[])
 		//decide whether to keep sim alive or terminate it
 		if (budgieEvent.timeNext < MONTH)
 		{
-
 			budgieEvent.currTime = budgieEvent.timeNext;
 			//Handle the budgie events according to its state
 			if (budgie.budgieStatus[currEventElement] == SINGING)
@@ -185,7 +176,7 @@ int main(int argc, char *argv[])
 		{
 			//Max time was reached and simulation is over
 			budgieEvent.currTime = MONTH;
-			updateStateTimes();
+			updateTotalTimes();
 			budgieEvent.prevTime = budgieEvent.currTime;
 		}
 	}
@@ -201,8 +192,8 @@ float Uniform01()
 	/* Get a random (+) integer from rand() */
 	float randomNum = (float)1.0 * rand();
 
-	/* Divide by MAX to get something in 0..1 */
-	randomNum = (float)randomNum / (1.0 * MAX);
+	/* Divide by MAX_INT to get something in 0..1 */
+	randomNum = (float)randomNum / (1.0 * MAX_INT);
 
 	return randomNum;
 }
@@ -225,50 +216,45 @@ void BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 
 	if (state == SINGING)
 	{
-		switch (numBirdsSinging)
-		{
-		case QUIET:
+		if (numBirdsSinging == QUIET)
 			cout << "Oops there are no budgies singing somehow." << endl;
-			break;
-		case SINGING:
-			updateStateTimes();
-			if (isPerfectSong(currEventElement))
-			{
+
+		else if (numBirdsSinging == SINGING)
+		{
+			updateTotalTimes();
+			//if song is perfect increase the total number of perfect songs
+			if (checkIfSongIsPerfect(currEventElement))
 				numPerfectSongs++;
-			}
-			//Update the perfectSongs total time
+
+			//Update the perfect Songs total time
 			perfectSongsTotalTime += budgieEvent.currTime - budgieEvent.prevTime;
-			break;
-		default:
-			//Sqwaky is the default
-			updateStateTimes();
-			break;
 		}
-		calcMeanTimes(QUIET, Song_Duration_Mean); /* Calculate exponentially mean quiet time  */
+		else
+		{
+			//Birds are sqwaking so update total times accordingly
+			updateTotalTimes();
+		}
+
+		// This budgie went quiet, so mean for quiet time will be calculated
+		//also budgie and budgie event will be updated to reflect this
+		budgie.budgieStatus[currEventElement] = QUIET;
+		budgieEvent.next[currEventElement] += Exponential(QUIET_TIME_MEAN);
 		//budgie went quiet so theres one less singing
 		numBirdsSinging--;
 
-		//budgie went quit and the event will be updated
+		//budgie went quiet and the event will be updated
 		budgieEvent.prevTime = budgieEvent.currTime;
 		budgie.currSongEnd = budgieEvent.currTime;
-	
 	}
 
 	else
-	{
-		switch (numBirdsSinging)
-		{
-		case QUIET:
-			updateStateTimes(); /* Idle, no budgie singing */
-			break;
-		case SINGING:
-			updateStateTimes(); /* Melodious, 1 budgie singing */
-			break;
-		default:				/* Sqwuaky */
-			updateStateTimes(); /* Sqwuaky, 2 or more budgies singing */
-			break;
-		}
-		calcMeanTimes(SINGING, Song_Duration_Mean); /* Calculate exponentially mean singing time */
+	{	//No birds are singing so update the times accordingly
+		updateTotalTimes(); 
+
+		// This budgie started singing, so mean for singing time will be calculated
+		//also budgie and budgie event will be updated to reflect this
+		budgie.budgieStatus[currEventElement] = SINGING;
+		budgieEvent.next[currEventElement] += Exponential(Song_Duration_Mean);
 		//budgie is singing so there's one more singing
 		numBirdsSinging++;
 
@@ -277,61 +263,28 @@ void BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 		budgie.currSongStart = budgieEvent.currTime;
 		budgie.currSong = currEventElement;
 		numAttemptedSongs++;
-	
 	}
 }
 
-/*
-	Updates the corresponding type of time depending on how many budgies are currently
-	singing at a time
-*/
-void updateStateTimes()
+//updates total times depending on number of birds singing at same time
+void updateTotalTimes()
 {
-	if (numBirdsSinging == 0) /* QUIET */
+	//birds are quiet
+	if (numBirdsSinging == QUIET)
 		quietTimeTotal += budgieEvent.currTime - budgieEvent.prevTime;
-
-	else if (numBirdsSinging == 1) /* MELODIOUS */
+	//birds are singing melodiosly
+	else if (numBirdsSinging == SINGING)
 		melodiousTimeTotal += budgieEvent.currTime - budgieEvent.prevTime;
-
-	else /* SQWUAKY */
+	//birdsa re squawking
+	else
 		squawkyTimeTotal += budgieEvent.currTime - budgieEvent.prevTime;
 }
 
-/*
-	Determines if the current song is a perfect song if the current song end time is
-	before the next 'scheduled' song start time
-*/
-bool isPerfectSong(int i)
+//check if current song is perfect or not
+bool checkIfSongIsPerfect(int i)
 {
-
-	bool perfectSong;
-	if ((budgie.currSong == i) && (budgie.currSongEnd < budgie.currSongStart))
-		perfectSong = true;
-
-	else
-		perfectSong = false;
-
-	return perfectSong;
-}
-
-/*
-	Calculate cumulatively the exponential distribution depending on the status of
-	the current budgie at the current budgieEvent
-*/
-void calcMeanTimes(int state, float Song_Duration_Mean)
-{
-
-	if (state == QUIET)
-	{
-		budgie.budgieStatus[currEventElement] = QUIET; /* This budgie is quiet, so calculate using mean for quiet time */
-		budgieEvent.next[currEventElement] += Exponential(QUIET_TIME_MEAN);
-	}
-
-	else
-	{
-		budgie.budgieStatus[currEventElement] = SINGING; /* This budgie is singing, so calculate using mean for singing time */
-		budgieEvent.next[currEventElement] += Exponential(Song_Duration_Mean);
-	}
+	bool isSongPerfect = (budgie.currSong == currEventElement) && (budgie.currSongEnd < budgie.currSongStart) ? true : false;
+	return isSongPerfect;
 }
 
 /*
