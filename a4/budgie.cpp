@@ -55,9 +55,9 @@ using namespace std;
 #define SQUAWKY 2
 
 /* Simlatoin constants */
-#define N 3					   // number of Budgies in BLAN
+// #define N 3					   // number of Budgies in BLAN
 #define QUIET_TIME_MEAN 30.0   // minutes
-#define SONG_DURATION_MEAN 3.0 // minutes
+//#define SONG_DURATION_MEAN 3.0 // minutes
 
 /* time constants for simmulation */
 #define DAY 1440.0		  //minutes in a day
@@ -105,9 +105,9 @@ float quietTimeTotal = 0.0,
 float Uniform01();
 float Exponential(float mu);
 
-void initAllBirdsToQuiet();
-void findnext();
-void handleBirdEvent(int state);
+
+void findnext(int N);
+void handleBirdEvent(int state,int N,float Song_Duration_Mean);
 
 bool isPerfectSong(int i);
 void updatePerfectTime();
@@ -115,33 +115,53 @@ void updateStateTimes();
 void updateEventFrom(int stateIndex);
 void updatenumBirdsSinging(int currentBird);
 
-void calcMeanTimes(int state);
+void calcMeanTimes(int state, float Song_Duration_Mean);
 void finalizeAllTimes();
 
-void outputSimResults();
-void outputFinal();
+void outputSimResults(int N,float Song_Duration_Mean);
+void outputFinal(int N);
 
-int main()
+
+int main(int argc, char *argv[])
 {
+	//user can choose to change this two variables
+	int N;
+	float Song_Duration_Mean;
+	if (argc == 1){
+		N = 3;
+		Song_Duration_Mean = 3.0;
+	}
+	else if (argc == 2){
+		N = atoi(argv[1]);
+		Song_Duration_Mean = 3.0;
+	}
+	else if (argc == 3){
+		N = atoi(argv[1]);
+		Song_Duration_Mean = float(atoi(argv[2]));
+	}
+	else
+	{
+		N = 3;
+		Song_Duration_Mean = 3.0;
+	}
 
-	// initAllBirdsToQuiet(); /* Before starting simulation, initialize all birds to
-	//   the QUIET state */
+
+	//Init all budgies to quiet
 	bird.birdStatus = vector <int>(N,QUIET);
 	event.next = vector<float>(N,(1.0/QUIET_TIME_MEAN));
-	// for (int i = 0; i < N; i++)
-	// {
-	// 	bird.birdStatus[i] = QUIET;
-	// 	event.next[i] = Exponential(1.0 / QUIET_TIME_MEAN);
-	// }
-
-	srand(RANDOM_NUM_INIT); /* Set RANDOM_NUM_INIT for random number generation (for consistency) */
-	int r = Uniform01();	/* Call srand() before this line */
-
+	
+	// Set RANDOM_NUM_INIT for random number generation 
+	// got it form here http://www.cplusplus.com/reference/cstdlib/srand/
+	//dont know why but i i remove this line it changes the answer somehow 
+	// even though im not using the variable random so thats why I left it 
+	srand(RANDOM_NUM_INIT); 
+	int random = Uniform01();	
+	
 	/* Main simulation */
 	while (event.currTime < MONTH)
 	{
 
-		findnext();
+		findnext(N);
 		/* Keep simulation running */
 		if (event.timeNext < MONTH)
 		{
@@ -149,16 +169,16 @@ int main()
 			event.currTime = event.timeNext;
 			/* Update corresponding variables and state changes */
 			if (bird.birdStatus[currEventElement] == SINGING)
-				handleBirdEvent(SINGING);
+				handleBirdEvent(SINGING,N,Song_Duration_Mean);
 			else
-				handleBirdEvent(QUIET);
+				handleBirdEvent(QUIET,N,Song_Duration_Mean);
 		}
 
 		else
 			finalizeAllTimes(); /* Maximum time reached */
 	}
-	outputSimResults();
-	outputFinal();
+	outputSimResults( N,Song_Duration_Mean);
+	outputFinal( N);
 }
 
 /*
@@ -190,20 +210,12 @@ float Exponential(float mean)
 /*
 	Initializes all birds to the quiet state before starting simulation.
 */
-void initAllBirdsToQuiet()
-{
 
-	for (int i = 0; i < N; i++)
-	{
-		bird.birdStatus[i] = QUIET;
-		event.next[i] = Exponential(1.0 / QUIET_TIME_MEAN);
-	}
-}
 
 /*
 	Finds the next event to happen but setting the next event time to 'infinity'
 */
-void findnext()
+void findnext(int N)
 {
 
 	event.timeNext = INFINITE; /* Find next event to occur */
@@ -222,7 +234,7 @@ void findnext()
 	Handles each corresponding event, depending on the current state of the bird, and will
 	update each corressponding time and then update the state of the bird
 */
-void handleBirdEvent(int state)
+void handleBirdEvent(int state,int N,float Song_Duration_Mean)
 {
 
 	if (state == SINGING)
@@ -244,7 +256,7 @@ void handleBirdEvent(int state)
 			updateStateTimes(); /* Sqwuaky, 2 or more birds singing */
 			break;
 		}
-		calcMeanTimes(QUIET);		  /* Calculate exponentially mean quiet time  */
+		calcMeanTimes(QUIET,Song_Duration_Mean);		  /* Calculate exponentially mean quiet time  */
 		updatenumBirdsSinging(QUIET); /* One less singing bird                    */
 		updateEventFrom(SINGING);	  /* This bird is now quiet                   */
 	}
@@ -263,7 +275,7 @@ void handleBirdEvent(int state)
 			updateStateTimes(); /* Sqwuaky, 2 or more birds singing */
 			break;
 		}
-		calcMeanTimes(SINGING);			/* Calculate exponentially mean singing time */
+		calcMeanTimes(SINGING,Song_Duration_Mean);			/* Calculate exponentially mean singing time */
 		updatenumBirdsSinging(SINGING); /* One more singing bird                     */
 		updateEventFrom(QUIET);			/* This bird is now singing				  */
 	}
@@ -328,7 +340,7 @@ void updatenumBirdsSinging(int currentBird)
 	Calculate cumulatively the exponential distribution depending on the status of
 	the current bird at the current event
 */
-void calcMeanTimes(int state)
+void calcMeanTimes(int state,float Song_Duration_Mean)
 {
 
 	if (state == QUIET)
@@ -340,7 +352,7 @@ void calcMeanTimes(int state)
 	else
 	{
 		bird.birdStatus[currEventElement] = SINGING; /* This bird is singing, so calculate using mean for singing time */
-		event.next[currEventElement] += Exponential(SONG_DURATION_MEAN);
+		event.next[currEventElement] += Exponential(Song_Duration_Mean);
 	}
 }
 
@@ -379,11 +391,11 @@ void updateEventFrom(int stateIndex)
 /*
 	Outputs simulation results
 */
-void outputSimResults()
+void outputSimResults(int N,float Song_Duration_Mean)
 {
 
 	//Calcaulation variables
-	float singTimeMean = (SONG_DURATION_MEAN / (QUIET_TIME_MEAN + SONG_DURATION_MEAN));
+	float singTimeMean = (Song_Duration_Mean / (QUIET_TIME_MEAN + Song_Duration_Mean));
 	float quietTimePercent = (100.0 * quietTimeTotal) / event.currTime;
 	float melodiousTimePercent = (100.0 * melodiousTimeTotal) / event.currTime;
 	float sqwuakyTimePercent = (100.0 * squawkyTimeTotal) / event.currTime;
@@ -397,8 +409,8 @@ void outputSimResults()
 		 << endl;
 
 	cout << "	N = " << N
-		 << "			QUIET_TIME_MEAN = " << QUIET_TIME_MEAN << " minutes" << endl;
-	cout << "	S = " << singTimeMean << "		SONG_DURATION_MEAN = " << SONG_DURATION_MEAN << " minutes" << endl;
+		 << "			QUIET TIME MEAN = " << QUIET_TIME_MEAN << " minutes" << endl;
+	cout << "	S = " << singTimeMean << "		SONG DURATION MEAN = " << Song_Duration_Mean << " minutes" << endl;
 
 	cout << "___________________________________________________________________________________" << endl
 		 << endl;
@@ -444,7 +456,7 @@ void outputSimResults()
 /*
 	Outputs results of each time, with the current N
 */
-void outputFinal()
+void outputFinal(int N)
 {
 
 	//Calcaulation variables
