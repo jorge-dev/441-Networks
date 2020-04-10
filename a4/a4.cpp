@@ -1,7 +1,8 @@
 /*
-Name:   Mohammad Al Sharbati
-ID:	    30027437
-Source: budgie.cpp
+Name:  Jorge Avila
+ID:	   10123968
+Asg:   4
+Tit#:  1
 
 Assumptoins:
 - There are N budgies in the BLAN, where N is a finite positive integer.
@@ -22,23 +23,6 @@ Assumptoins:
 
 Goal: Figure out what number of budgies maximises Melodious operation
 
-Events
-• Budgie Song eventCurrTime 
-• Budgie Song End
-
-Parameters
-• Number of budgies (variable)
-• Mean singing time (fixed) 
-• Mean quiet time (fixed)
-
-State Variables
-• Number of budgies singing
-
-Statistic Variables
-• Quiet time
-• Melodious time 
-• Squawky time 
-• Total time
 */
 
 #include <stdio.h>
@@ -52,7 +36,7 @@ using namespace std;
 /* Budgie states */
 #define QUIET 0
 #define SINGING 1
-#define SQUAWKY 2 // this can be any number other than 2 and it will be the same
+
 
 // Simlatoin constant
 #define QUIET_TIME_MEAN 30.0 // minutes
@@ -134,12 +118,7 @@ int main(int argc, char *argv[])
 	//Init all budgies to quiet
 	BudgieClass testBudgie(N);
 
-	// Set RANDOM_NUM_INIT for random number generation
-	// got it form here http://www.cplusplus.com/reference/cstdlib/srand/
-	//dont know why but i i remove this line it changes the answer somehow
-	// even though im not using the variable random so thats why I left it
-	srand(RANDOM_NUM_INIT);
-	int random = testBudgie.Uniform01();
+
 
 	/* Main simulation */
 	while (testBudgie.eventCurrTime < MONTH)
@@ -206,7 +185,7 @@ int main(int argc, char *argv[])
 BudgieClass::BudgieClass(int N)
 {
 	budgieStatus = vector<int>(N, QUIET);
-	eventNext = vector<float>(N, (1.0 / QUIET_TIME_MEAN));
+	eventNext = vector<float>(N, ( QUIET_TIME_MEAN));
 }
 
 //Get a random number in between 0 and 1
