@@ -1,0 +1,17 @@
+
+Name:  Jorge Avila
+ID:	   10123968
+Asg:   4
+Tit#:  1
+
+                                How to compile the program: 
+            g++ a4.cpp -o "choose a name"
+
+                                How to run: 
+There are 3 running options: 
+    1. ./a4 --- this assumes the N is 3 and song durations is # minutes
+    2. ./a4 N --- n will be the desired number of birds and song duration will be 3 minutes
+    3. ./a4 N S --- here S is the desired song duration
+
+                                Testing:  
+            I used the values of N from 1 to 29  and 3 different song durations 2,3, and 5

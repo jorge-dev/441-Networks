@@ -37,7 +37,6 @@ using namespace std;
 #define QUIET 0
 #define SINGING 1
 
-
 // Simlatoin constant
 #define QUIET_TIME_MEAN 30.0 // minutes
 
@@ -47,7 +46,9 @@ using namespace std;
 #define MONTH 43800.0	  //minutes in a month
 #define INFINITE 999999.0 // time for testing large perios of time
 
-class BudgieClass
+
+//class used for the to handle the event and budie information
+class Budgie
 {
 public:
 	float eventTimeNext;
@@ -61,7 +62,7 @@ public:
 	int budgieCurrSongEnd;	 //time
 
 public:
-	BudgieClass(int N);
+	Budgie(int N);
 	float Uniform01();
 	float Exponential(float mu);
 	void BudgieEventHandler(int state, int N, float Song_Duration_Mean);
@@ -116,82 +117,71 @@ int main(int argc, char *argv[])
 	}
 
 	//Init all budgies to quiet
-	BudgieClass testBudgie(N);
-
-
+	Budgie budgie(N);
 
 	/* Main simulation */
-	while (testBudgie.eventCurrTime < MONTH)
+	while (budgie.eventCurrTime < MONTH)
 	{
-		
+
 		//Gets the necxt budgie event and also sets its time to "infinity"
-		testBudgie.eventTimeNext = INFINITE;
+		budgie.eventTimeNext = INFINITE;
 		for (int i = 0; i < N; i++)
 		{
-			if (testBudgie.eventNext[i] < testBudgie.eventTimeNext)
+			if (budgie.eventNext[i] < budgie.eventTimeNext)
 			{
-				testBudgie.eventTimeNext = testBudgie.eventNext[i];
+				budgie.eventTimeNext = budgie.eventNext[i];
 				currEventElement = i;
-				
 			}
 		}
 
 		//decide whether to keep sim alive or terminate it
-		if (testBudgie.eventTimeNext < MONTH)
+		if (budgie.eventTimeNext < MONTH)
 		{
-			testBudgie.eventCurrTime = testBudgie.eventTimeNext;
+			budgie.eventCurrTime = budgie.eventTimeNext;
 			//Handle the budgie events according to its state
-			if (testBudgie.budgieStatus[currEventElement] == SINGING){
-				testBudgie.BudgieEventHandler(SINGING, N, Song_Duration_Mean);
+			if (budgie.budgieStatus[currEventElement] == SINGING)
+			{
+				budgie.BudgieEventHandler(SINGING, N, Song_Duration_Mean);
 			}
-			else{
-				testBudgie.BudgieEventHandler(QUIET, N, Song_Duration_Mean);
+			else
+			{
+				budgie.BudgieEventHandler(QUIET, N, Song_Duration_Mean);
 			}
 		}
 
 		else
 		{
-			
-			if (testBudgie.checkIfSongIsPerfect(currEventElement))
-			{
-				numPerfectSongs++;
 
-				//Update the perfect Songs total time
-				perfectSongsTotalTime += testBudgie.eventCurrTime - testBudgie.eventPrevTime;
-			}
-			
 			//Max time was reached and simulation is over
-			testBudgie.eventCurrTime = MONTH;
+			budgie.eventCurrTime = MONTH;
 
 			//birds are quiet
 			if (numBirdsSinging == QUIET)
-				quietTimeTotal += testBudgie.eventCurrTime - testBudgie.eventPrevTime;
+				quietTimeTotal += budgie.eventCurrTime - budgie.eventPrevTime;
 			//birds are singing melodiosly
 			else if (numBirdsSinging == SINGING)
-				melodiousTimeTotal += testBudgie.eventCurrTime - testBudgie.eventPrevTime;
+				melodiousTimeTotal += budgie.eventCurrTime - budgie.eventPrevTime;
 			//birdsa re squawking
 			else
-				squawkyTimeTotal += testBudgie.eventCurrTime - testBudgie.eventPrevTime;
+				squawkyTimeTotal += budgie.eventCurrTime - budgie.eventPrevTime;
 
-			testBudgie.eventPrevTime = testBudgie.eventCurrTime;
-			
+			budgie.eventPrevTime = budgie.eventCurrTime;
 		}
-		
 	}
-	
-	testBudgie.printSimulationResults(N, Song_Duration_Mean);
+
+	budgie.printSimulationResults(N, Song_Duration_Mean);
 }
 
-BudgieClass::BudgieClass(int N)
+Budgie::Budgie(int N)
 {
 	budgieStatus = vector<int>(N, QUIET);
-	eventNext = vector<float>(N, ( QUIET_TIME_MEAN));
+	eventNext = vector<float>(N, (QUIET_TIME_MEAN));
 }
 
 //Get a random number in between 0 and 1
 //Copied from the Barber example
 
-float BudgieClass::Uniform01()
+float Budgie::Uniform01()
 {
 	/* Get a random (+) integer from rand() */
 	float randomNum = (float)1.0 * rand();
@@ -205,7 +195,7 @@ float BudgieClass::Uniform01()
 //	Exponential Variate
 //Copied from the Barber example
 
-float BudgieClass::Exponential(float mean)
+float Budgie::Exponential(float mean)
 {
 
 	float randomNum = Uniform01();
@@ -215,19 +205,16 @@ float BudgieClass::Exponential(float mean)
 }
 
 //THis will use the given event state and will update each time and state of that event
-void BudgieClass::BudgieEventHandler(int state, int N, float Song_Duration_Mean)
+void Budgie::BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 {
-	
 
 	if (state == SINGING)
 	{
-		
-		
+
 		if (numBirdsSinging == QUIET)
 		{
 			cout << "Oops there are no budgies singing somehow." << endl;
 			quietTimeTotal += eventCurrTime - eventPrevTime;
-			
 		}
 
 		else if (numBirdsSinging == SINGING)
@@ -240,14 +227,11 @@ void BudgieClass::BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 				//Update the perfect Songs total time
 				perfectSongsTotalTime += eventCurrTime - eventPrevTime;
 			}
-			
 		}
 		else
 		{
 			//Birds are sqwaking so update total times accordingly
 			squawkyTimeTotal += eventCurrTime - eventPrevTime;
-			
-			
 		}
 
 		// This budgie went quiet, so mean for quiet time will be calculated
@@ -260,14 +244,11 @@ void BudgieClass::BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 		//budgie went quiet and the event will be updated
 		eventPrevTime = eventCurrTime;
 		budgieCurrSongEnd = eventCurrTime;
-		
-	
 	}
 
 	else
 	{
-		
-		
+
 		//birds are quiet
 		if (numBirdsSinging == QUIET)
 			quietTimeTotal += eventCurrTime - eventPrevTime;
@@ -290,15 +271,11 @@ void BudgieClass::BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 		budgieCurrSongStart = eventCurrTime;
 		budgieCurrSong = currEventElement;
 		numAttemptedSongs++;
-
-		
 	}
-	
-	
 }
 
 //check if current song is perfect or not
-bool BudgieClass::checkIfSongIsPerfect(int i)
+bool Budgie::checkIfSongIsPerfect(int i)
 {
 	bool isSongPerfect = (budgieCurrSong == currEventElement) && (budgieCurrSongEnd < budgieCurrSongStart) ? true : false;
 	return isSongPerfect;
@@ -307,7 +284,7 @@ bool BudgieClass::checkIfSongIsPerfect(int i)
 /*
 	Outputs simulation results
 */
-void BudgieClass::printSimulationResults(int N, float Song_Duration_Mean)
+void Budgie::printSimulationResults(int N, float Song_Duration_Mean)
 {
 
 	//Calcaulation variables
