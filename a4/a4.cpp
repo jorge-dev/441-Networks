@@ -86,7 +86,7 @@ public:
 };
 
 /* Global variables */
-// Event 
+// Event
 // Budgie budgie;
 
 int currEventElement = 0;
@@ -104,7 +104,6 @@ float perfectSongsTotalTime = 0.0;
 
 /* Max integer */
 #define MAX_INT INT_MAX
-
 
 int main(int argc, char *argv[])
 {
@@ -145,7 +144,7 @@ int main(int argc, char *argv[])
 	/* Main simulation */
 	while (testBudgie.eventCurrTime < MONTH)
 	{
-
+		
 		//Gets the necxt budgie event and also sets its time to "infinity"
 		testBudgie.eventTimeNext = INFINITE;
 		for (int i = 0; i < N; i++)
@@ -154,6 +153,7 @@ int main(int argc, char *argv[])
 			{
 				testBudgie.eventTimeNext = testBudgie.eventNext[i];
 				currEventElement = i;
+				
 			}
 		}
 
@@ -170,6 +170,14 @@ int main(int argc, char *argv[])
 
 		else
 		{
+			if (testBudgie.checkIfSongIsPerfect(currEventElement))
+			{
+				numPerfectSongs++;
+
+				//Update the perfect Songs total time
+				perfectSongsTotalTime += testBudgie.eventCurrTime - testBudgie.eventPrevTime;
+			}
+			
 			//Max time was reached and simulation is over
 			testBudgie.eventCurrTime = MONTH;
 
@@ -184,9 +192,9 @@ int main(int argc, char *argv[])
 				squawkyTimeTotal += testBudgie.eventCurrTime - testBudgie.eventPrevTime;
 			testBudgie.eventPrevTime = testBudgie.eventCurrTime;
 		}
+		
 	}
 	testBudgie.printSimulationResults(N, Song_Duration_Mean);
-
 }
 
 BudgieClass::BudgieClass(int N)
@@ -224,29 +232,37 @@ float BudgieClass::Exponential(float mean)
 //THis will use the given event state and will update each time and state of that event
 void BudgieClass::BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 {
+	
 
 	if (state == SINGING)
 	{
+		
+		
 		if (numBirdsSinging == QUIET)
 		{
 			cout << "Oops there are no budgies singing somehow." << endl;
 			quietTimeTotal += eventCurrTime - eventPrevTime;
+			
 		}
 
 		else if (numBirdsSinging == SINGING)
 		{
 			melodiousTimeTotal += eventCurrTime - eventPrevTime;
-			//if song is perfect increase the total number of perfect songs
 			if (checkIfSongIsPerfect(currEventElement))
+			{
 				numPerfectSongs++;
 
-			//Update the perfect Songs total time
-			perfectSongsTotalTime += eventCurrTime - eventPrevTime;
+				//Update the perfect Songs total time
+				perfectSongsTotalTime += eventCurrTime - eventPrevTime;
+			}
+			
 		}
 		else
 		{
 			//Birds are sqwaking so update total times accordingly
 			squawkyTimeTotal += eventCurrTime - eventPrevTime;
+			
+			
 		}
 
 		// This budgie went quiet, so mean for quiet time will be calculated
@@ -259,10 +275,14 @@ void BudgieClass::BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 		//budgie went quiet and the event will be updated
 		eventPrevTime = eventCurrTime;
 		budgieCurrSongEnd = eventCurrTime;
+		
+	
 	}
 
 	else
 	{
+		
+		
 		//birds are quiet
 		if (numBirdsSinging == QUIET)
 			quietTimeTotal += eventCurrTime - eventPrevTime;
@@ -285,7 +305,11 @@ void BudgieClass::BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 		budgieCurrSongStart = eventCurrTime;
 		budgieCurrSong = currEventElement;
 		numAttemptedSongs++;
+
+		
 	}
+	
+	
 }
 
 //check if current song is perfect or not
@@ -359,7 +383,7 @@ void BudgieClass::printSimulationResults(int N, float Song_Duration_Mean)
 	cout << "___________________________________________________________________________________" << endl
 		 << endl;
 
-cout << fixed << setprecision(3);
+	cout << fixed << setprecision(3);
 
 	cout << "\t\t           ++++++++++++++++++++++++++" << endl;
 	cout << "\t\t           + TABLE OF FINAL RESULTS +" << endl;
@@ -387,7 +411,4 @@ cout << fixed << setprecision(3);
 	else
 		cout << "0.000000" << endl
 			 << endl;
-
-
 }
-
