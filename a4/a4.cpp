@@ -162,14 +162,17 @@ int main(int argc, char *argv[])
 		{
 			testBudgie.eventCurrTime = testBudgie.eventTimeNext;
 			//Handle the budgie events according to its state
-			if (testBudgie.budgieStatus[currEventElement] == SINGING)
+			if (testBudgie.budgieStatus[currEventElement] == SINGING){
 				testBudgie.BudgieEventHandler(SINGING, N, Song_Duration_Mean);
-			else
+			}
+			else{
 				testBudgie.BudgieEventHandler(QUIET, N, Song_Duration_Mean);
+			}
 		}
 
 		else
 		{
+			
 			if (testBudgie.checkIfSongIsPerfect(currEventElement))
 			{
 				numPerfectSongs++;
@@ -190,10 +193,13 @@ int main(int argc, char *argv[])
 			//birdsa re squawking
 			else
 				squawkyTimeTotal += testBudgie.eventCurrTime - testBudgie.eventPrevTime;
+
 			testBudgie.eventPrevTime = testBudgie.eventCurrTime;
+			
 		}
 		
 	}
+	
 	testBudgie.printSimulationResults(N, Song_Duration_Mean);
 }
 
@@ -289,7 +295,7 @@ void BudgieClass::BudgieEventHandler(int state, int N, float Song_Duration_Mean)
 		//birds are singing melodiosly
 		else if (numBirdsSinging == SINGING)
 			melodiousTimeTotal += eventCurrTime - eventPrevTime;
-		//birdsa re squawking
+		//birds are squawking
 		else
 			squawkyTimeTotal += eventCurrTime - eventPrevTime;
 
